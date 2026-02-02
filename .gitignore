@@ -1,0 +1,19 @@
+# MATLAB gitignore
+*.asv
+*.m~
+*.slxc
+*.mex*
+*.mat
+*.fig
+*.p
+*.mltbx
+*.mlappinstall
+*.pcode
+*.slx.autosave
+
+# Artifacts
+.gemini/
+brain/
+
+# Log files
+*.log
