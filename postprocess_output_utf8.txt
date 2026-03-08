@@ -1,0 +1,301 @@
+﻿============================================================
+  Julia ADORE 鈥?Dynamic Postprocessing
+============================================================
+  Bearing: 7210B (16 balls)
+  Load: Fa=2000 N, n=10000 RPM
+  Duration: 5 ms
+
+Running simulation...
+Hertz inner 违 = 3.2685945789285957e10 N/m^1.5
+Hertz outer 违 = 3.399924401045262e10 N/m^1.5
+Scales: Q=1.6539472108020771e7 N, L=0.00635 m, T=1.7921660029083612e-6 s
+Solving quasi-static equilibrium...
+  NonlinearSolve success: Stalled
+  ||res||: 3.5496697005699842e-9
+  QS converged: true
+  QS 伪_inner mean: 48.45720483982172掳
+
+=== Per-Mode Damping (味 = 0.10) ===
+  K_hertz = 8.75e+07 N/m  (未_avg = 3.19 碌m)
+  c_ball_trans  = 171.16 N路s/m  (c鈽?= 0.036667)
+  c_ball_orbit  = 17.12 N路s/m  (c鈽?= 0.003667)
+  c_ball_spin   = 0.0044 N路m路s   (c鈽?= 0.000001)
+  c_ir          = 3153.74 N路s/m  (c鈽?= 0.675615)
+  c_cage        = 25.90 N路s/m  (c鈽?= 0.005548)
+  c_tilt        = 3153.74 N路s/m  (c鈽?= 1.000000)
+Integrating (5.0 ms)...
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+  [ODE] Integrator at t = 2.48777e-12 s  (0.00 %)
+  ODE retcode: Success
+  712 time points saved
+
+  Wall time: 23.2 s
+  ODE retcode: Success
+  Time points: 712
+
+=== Generating Plots 鈫?E:\antigravity_folder\ADORE_V2_jl\results ===
+  [OK] 01_Race_Displacement.png
+  [OK] 02_Cage_Dynamics.png
+  [OK] 03_Contact_Loads.png
+  [OK] 04_Ball_Kinematics.png
+
+  Theory cage speed: 4305.1 RPM
+  Final cage speed:  4269.8 RPM (99.2%)
+  Final Q_inner(Ball 1): 173.7 N
+  Final 伪_inner(Ball 1): 46.0掳, 伪_outer(Ball 1): 35.1掳
+
+=== Computing Field Outputs ===
+  Field outputs: 712 time steps 脳 16 balls
+
+=== Generating Plots 07鈥?3 ===
+  [OK] 07_All_Ball_Loads.png
+  [OK] 08_All_Ball_Forces.png
+  [OK] 09_All_Ball_Moments.png
+  [OK] 10_Heat_Generation.png
+  [OK] 11_All_Ball_Heat.png
+  [OK] 12_Heat_Pie.png
+  [OK] 13_Heat_Per_Ball.png
+
+  === Friction Heat Summary (Steady-State, last 142 steps) ===
+    Inner Sliding       :   90.882 W
+    Outer Sliding       :   30.518 W
+    Inner Spin          :   12.213 W
+    Outer Spin          :   12.665 W
+    Churning Drag       :  156.264 W
+    Churning Rot.       :    0.116 W
+    TOTAL               :  302.658 W
+    Per-ball mean     :   18.916 W
+    Per-ball max      :   18.916 W
+    Per-ball min      :   18.916 W
+
+============================================================
+  POSTPROCESSING COMPLETE 鈫?E:\antigravity_folder\ADORE_V2_jl\results
+============================================================

@@ -1,0 +1,1257 @@
+﻿============================================================
+  ADORE.jl 鈥?1s Physics Simulation (FBDF)
+============================================================
+Bearing:    7210B (16 balls)
+Load:       F_a=2000 N, n=10000 RPM
+Duration:   1.000 s
+Solver:     FBDF + FiniteDiff Jacobian
+
+Starting at 15:12:22...
+Hertz inner 违 = 3.2685945789285957e10 N/m^1.5
+Hertz outer 违 = 3.399924401045262e10 N/m^1.5
+Scales: Q=1.6539472108020771e7 N, L=0.00635 m, T=1.7921660029083612e-6 s
+Solving quasi-static equilibrium...
+  NonlinearSolve success: Stalled
+  ||res||: 3.5496697005699842e-9
+  QS converged: true
+  QS 伪_inner mean: 48.45720483982172掳
+
+=== Per-Mode Damping (味 = 0.03) ===
+  K_hertz = 8.75e+07 N/m  (未_avg = 3.19 碌m)
+  c_ball_trans  = 51.35 N路s/m  (c鈽?= 0.011000)
+  c_ball_orbit  = 5.13 N路s/m  (c鈽?= 0.001100)
+  c_ball_spin   = 0.0013 N路m路s   (c鈽?= 0.000000)
+  c_ir          = 946.12 N路s/m  (c鈽?= 0.202684)
+  c_cage        = 7.77 N路s/m  (c鈽?= 0.001664)
+  c_tilt        = 946.12 N路s/m  (c鈽?= 1.000000)
+Integrating (1000.0 ms)...
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+[KERNEL-V3-TRAC] ode_rhs! loaded with Harris traction damping
+julia : ERROR: LoadError: MethodError: no method 
+matching (::ADORE.var"#print_progress#29"{Simulat
+ionConfig, Base.RefValue{Float64}, Scales})(::Ord
+inaryDiffEqCore.ODEIntegrator{OrdinaryDiffEqBDF.F
+BDF{5, 0, ADTypes.AutoFiniteDiff{Val{:forward}, V
+al{:forward}, Val{:hcentral}, Nothing, Nothing, I
+nt64}, Nothing, OrdinaryDiffEqNonlinearSolve.NLNe
+wton{Rational{Int64}, Rational{Int64}, Rational{I
+nt64}, Nothing}, typeof(OrdinaryDiffEqCore.DEFAUL
+T_PRECS), Val{:forward}(), true, nothing, Nothing
+, Nothing, typeof(OrdinaryDiffEqCore.trivial_limi
+ter!)}, true, Vector{Float64}, Nothing, Float64, 
+Tuple{Vector{Float64}}, Float64, Float64, Float64
+, Float64, Vector{Vector{Float64}}, SciMLBase.ODE
+Solution{Float64, 2, Vector{Vector{Float64}}, Not
+hing, Nothing, Vector{Float64}, Vector{Vector{Vec
+tor{Float64}}}, Nothing, SciMLBase.ODEProblem{Vec
+tor{Float64}, Tuple{Float64, Float64}, true, Tupl
+e{Vector{Float64}}, SciMLBase.ODEFunction{true, S
+ciMLBase.AutoSpecialize, FunctionWrappersWrappers
+.FunctionWrappersWrapper{Tuple{FunctionWrappers.F
+unctionWrapper{Nothing, Tuple{Vector{Float64}, Ve
+ctor{Float64}, Tuple{Vector{Float64}}, Float64}}}
+, false}, LinearAlgebra.UniformScaling{Bool}, Not
+hing, Nothing, Nothing, Nothing, Nothing, Nothing
+, Nothing, Nothing, Nothing, Nothing, Nothing, No
+thing, typeof(SciMLBase.DEFAULT_OBSERVED), Nothin
+g, Nothing, Nothing, Nothing}, Base.Pairs{Symbol,
+ Union{}, Nothing, @NamedTuple{}}, SciMLBase.Stan
+dardODEProblem}, OrdinaryDiffEqBDF.FBDF{5, 0, ADT
+ypes.AutoFiniteDiff{Val{:forward}, Val{:forward},
+ Val{:hcentral}, Nothing, Nothing, Int64}, Nothin
+g, OrdinaryDiffEqNonlinearSolve.NLNewton{Rational
+{Int64}, Rational{Int64}, Rational{Int64}, Nothin
+g}, typeof(OrdinaryDiffEqCore.DEFAULT_PRECS), Val
+{:forward}(), true, nothing, Nothing, Nothing, ty
+peof(OrdinaryDiffEqCore.trivial_limiter!)}, Ordin
+aryDiffEqCore.InterpolationData{SciMLBase.ODEFunc
+tion{true, SciMLBase.AutoSpecialize, FunctionWrap
+persWrappers.FunctionWrappersWrapper{Tuple{Functi
+onWrappers.FunctionWrapper{Nothing, Tuple{Vector{
+Float64}, Vector{Float64}, Tuple{Vector{Float64}}
+, Float64}}}, false}, LinearAlgebra.UniformScalin
+g{Bool}, Nothing, Nothing, Nothing, Nothing, Noth
+ing, Nothing, Nothing, Nothing, Nothing, Nothing,
+ Nothing, Nothing, typeof(SciMLBase.DEFAULT_OBSER
+VED), Nothing, Nothing, Nothing, Nothing}, Vector
+{Vector{Float64}}, Vector{Float64}, Vector{Vector
+{Vector{Float64}}}, Nothing, OrdinaryDiffEqBDF.FB
+DFCache{5, OrdinaryDiffEqNonlinearSolve.NLSolver{
+OrdinaryDiffEqNonlinearSolve.NLNewton{Rational{In
+t64}, Rational{Int64}, Rational{Int64}, Nothing},
+ true, Vector{Float64}, Float64, Nothing, Float64
+, OrdinaryDiffEqNonlinearSolve.NLNewtonCache{Vect
+or{Float64}, Float64, Float64, Vector{Float64}, M
+atrix{Float64}, Matrix{Float64}, SciMLBase.UJacob
+ianWrapper{true, SciMLBase.ODEFunction{true, SciM
+LBase.AutoSpecialize, FunctionWrappersWrappers.Fu
+nctionWrappersWrapper{Tuple{FunctionWrappers.Func
+tionWrapper{Nothing, Tuple{Vector{Float64}, Vecto
+r{Float64}, Tuple{Vector{Float64}}, Float64}}}, f
+alse}, LinearAlgebra.UniformScaling{Bool}, Nothin
+g, Nothing, Nothing, Nothing, Nothing, Nothing, N
+othing, Nothing, Nothing, Nothing, Nothing, Nothi
+ng, typeof(SciMLBase.DEFAULT_OBSERVED), Nothing, 
+Nothing, Nothing, Nothing}, Float64, Tuple{Vector
+{Float64}}}, Tuple{DifferentiationInterfaceFinite
+DiffExt.FiniteDiffTwoArgJacobianPrep{Nothing, Fin
+iteDiff.JacobianCache{Vector{Float64}, Vector{Flo
+at64}, Vector{Float64}, Vector{Float64}, UnitRang
+e{Int64}, Nothing, Val{:forward}(), Float64}, Flo
+at64, Float64, Int64}, DifferentiationInterfaceFi
+niteDiffExt.FiniteDiffTwoArgJacobianPrep{Nothing,
+ FiniteDiff.JacobianCache{Vector{Float64}, Vector
+{Float64}, Vector{Float64}, Vector{Float64}, Unit
+Range{Int64}, Nothing, Val{:forward}(), Float64},
+ Float64, Float64, Int64}}, LinearSolve.LinearCac
+he{Matrix{Float64}, Vector{Float64}, Vector{Float
+64}, SciMLBase.NullParameters, LinearSolve.Defaul
+tLinearSolver, LinearSolve.DefaultLinearSolverIni
+t{LinearAlgebra.LU{Float64, Matrix{Float64}, Vect
+or{Int64}}, LinearAlgebra.QRCompactWY{Float64, Ma
+trix{Float64}, Matrix{Float64}}, Nothing, Nothing
+, Nothing, Nothing, Nothing, Nothing, Tuple{Linea
+rAlgebra.LU{Float64, Matrix{Float64}, Vector{Int6
+4}}, Vector{Int64}}, Tuple{LinearAlgebra.LU{Float
+64, Matrix{Float64}, Vector{Int64}}, Vector{Int64
+}}, Nothing, Nothing, Nothing, LinearAlgebra.SVD{
+Float64, Float64, Matrix{Float64}, Vector{Float64
+}}, LinearAlgebra.Cholesky{Float64, Matrix{Float6
+4}}, LinearAlgebra.Cholesky{Float64, Matrix{Float
+64}}, Tuple{LinearAlgebra.LU{Float64, Matrix{Floa
+t64}, Vector{Int32}}, Base.RefValue{Int32}}, Tupl
+e{LinearAlgebra.LU{Float64, Matrix{Float64}, Vect
+or{Int64}}, Base.RefValue{Int64}}, LinearAlgebra.
+QRPivoted{Float64, Matrix{Float64}, Vector{Float6
+4}, Vector{Int64}}, Nothing, Nothing, Nothing, No
+thing, Nothing, Matrix{Float64}, Vector{Float64}}
+, LinearSolve.InvPreconditioner{LinearAlgebra.Dia
+gonal{Float64, Vector{Float64}}}, LinearAlgebra.D
+iagonal{Float64, Vector{Float64}}, Float64, Linea
+rSolve.LinearVerbosity{SciMLLogging.Silent, SciML
+Logging.Silent, SciMLLogging.Silent, SciMLLogging
+.Silent, SciMLLogging.Silent, SciMLLogging.Silent
+, SciMLLogging.Silent, SciMLLogging.Silent, SciML
+Logging.WarnLevel, SciMLLogging.WarnLevel, SciMLL
+ogging.Silent, SciMLLogging.Silent, SciMLLogging.
+Silent, SciMLLogging.Silent, SciMLLogging.Silent,
+ SciMLLogging.Silent}, Bool, LinearSolve.LinearSo
+lveAdjoint{Missing}}, Nothing}, Float64}, Vector{
+Float64}, Vector{Float64}, Vector{Float64}, Float
+64, Vector{Float64}, Vector{Vector{Float64}}, Sta
+ticArraysCore.SMatrix{5, 6, Rational{Int64}, 30},
+ Float64, Vector{Float64}, Vector{Float64}, typeo
+f(OrdinaryDiffEqCore.trivial_limiter!), Matrix{Fl
+oat64}}, Nothing}, SciMLBase.DEStats, Nothing, No
+thing, Nothing, Nothing}, SciMLBase.ODEFunction{t
+rue, SciMLBase.AutoSpecialize, FunctionWrappersWr
+appers.FunctionWrappersWrapper{Tuple{FunctionWrap
+pers.FunctionWrapper{Nothing, Tuple{Vector{Float6
+4}, Vector{Float64}, Tuple{Vector{Float64}}, Floa
+t64}}}, false}, LinearAlgebra.UniformScaling{Bool
+}, Nothing, Nothing, Nothing, Nothing, Nothing, N
+othing, Nothing, Nothing, Nothing, Nothing, Nothi
+ng, Nothing, typeof(SciMLBase.DEFAULT_OBSERVED), 
+Nothing, Nothing, Nothing, Nothing}, OrdinaryDiff
+EqBDF.FBDFCache{5, OrdinaryDiffEqNonlinearSolve.N
+LSolver{OrdinaryDiffEqNonlinearSolve.NLNewton{Rat
+ional{Int64}, Rational{Int64}, Rational{Int64}, N
+othing}, true, Vector{Float64}, Float64, Nothing,
+ Float64, OrdinaryDiffEqNonlinearSolve.NLNewtonCa
+che{Vector{Float64}, Float64, Float64, Vector{Flo
+at64}, Matrix{Float64}, Matrix{Float64}, SciMLBas
+e.UJacobianWrapper{true, SciMLBase.ODEFunction{tr
+ue, SciMLBase.AutoSpecialize, FunctionWrappersWra
+ppers.FunctionWrappersWrapper{Tuple{FunctionWrapp
+ers.FunctionWrapper{Nothing, Tuple{Vector{Float64
+}, Vector{Float64}, Tuple{Vector{Float64}}, Float
+64}}}, false}, LinearAlgebra.UniformScaling{Bool}
+, Nothing, Nothing, Nothing, Nothing, Nothing, No
+thing, Nothing, Nothing, Nothing, Nothing, Nothin
+g, Nothing, typeof(SciMLBase.DEFAULT_OBSERVED), N
+othing, Nothing, Nothing, Nothing}, Float64, Tupl
+e{Vector{Float64}}}, Tuple{DifferentiationInterfa
+ceFiniteDiffExt.FiniteDiffTwoArgJacobianPrep{Noth
+ing, FiniteDiff.JacobianCache{Vector{Float64}, Ve
+ctor{Float64}, Vector{Float64}, Vector{Float64}, 
+UnitRange{Int64}, Nothing, Val{:forward}(), Float
+64}, Float64, Float64, Int64}, DifferentiationInt
+erfaceFiniteDiffExt.FiniteDiffTwoArgJacobianPrep{
+Nothing, FiniteDiff.JacobianCache{Vector{Float64}
+, Vector{Float64}, Vector{Float64}, Vector{Float6
+4}, UnitRange{Int64}, Nothing, Val{:forward}(), F
+loat64}, Float64, Float64, Int64}}, LinearSolve.L
+inearCache{Matrix{Float64}, Vector{Float64}, Vect
+or{Float64}, SciMLBase.NullParameters, LinearSolv
+e.DefaultLinearSolver, LinearSolve.DefaultLinearS
+olverInit{LinearAlgebra.LU{Float64, Matrix{Float6
+4}, Vector{Int64}}, LinearAlgebra.QRCompactWY{Flo
+at64, Matrix{Float64}, Matrix{Float64}}, Nothing,
+ Nothing, Nothing, Nothing, Nothing, Nothing, Tup
+le{LinearAlgebra.LU{Float64, Matrix{Float64}, Vec
+tor{Int64}}, Vector{Int64}}, Tuple{LinearAlgebra.
+LU{Float64, Matrix{Float64}, Vector{Int64}}, Vect
+or{Int64}}, Nothing, Nothing, Nothing, LinearAlge
+bra.SVD{Float64, Float64, Matrix{Float64}, Vector
+{Float64}}, LinearAlgebra.Cholesky{Float64, Matri
+x{Float64}}, LinearAlgebra.Cholesky{Float64, Matr
+ix{Float64}}, Tuple{LinearAlgebra.LU{Float64, Mat
+rix{Float64}, Vector{Int32}}, Base.RefValue{Int32
+}}, Tuple{LinearAlgebra.LU{Float64, Matrix{Float6
+4}, Vector{Int64}}, Base.RefValue{Int64}}, Linear
+Algebra.QRPivoted{Float64, Matrix{Float64}, Vecto
+r{Float64}, Vector{Int64}}, Nothing, Nothing, Not
+hing, Nothing, Nothing, Matrix{Float64}, Vector{F
+loat64}}, LinearSolve.InvPreconditioner{LinearAlg
+ebra.Diagonal{Float64, Vector{Float64}}}, LinearA
+lgebra.Diagonal{Float64, Vector{Float64}}, Float6
+4, LinearSolve.LinearVerbosity{SciMLLogging.Silen
+t, SciMLLogging.Silent, SciMLLogging.Silent, SciM
+LLogging.Silent, SciMLLogging.Silent, SciMLLoggin
+g.Silent, SciMLLogging.Silent, SciMLLogging.Silen
+t, SciMLLogging.WarnLevel, SciMLLogging.WarnLevel
+, SciMLLogging.Silent, SciMLLogging.Silent, SciML
+Logging.Silent, SciMLLogging.Silent, SciMLLogging
+.Silent, SciMLLogging.Silent}, Bool, LinearSolve.
+LinearSolveAdjoint{Missing}}, Nothing}, Float64},
+ Vector{Float64}, Vector{Float64}, Vector{Float64
+}, Float64, Vector{Float64}, Vector{Vector{Float6
+4}}, StaticArraysCore.SMatrix{5, 6, Rational{Int6
+4}, 30}, Float64, Vector{Float64}, Vector{Float64
+}, typeof(OrdinaryDiffEqCore.trivial_limiter!), M
+atrix{Float64}}, OrdinaryDiffEqCore.DEOptions{Flo
+at64, Float64, Float64, Float64, OrdinaryDiffEqCo
+re.DummyController, typeof(DiffEqBase.ODE_DEFAULT
+_NORM), typeof(LinearAlgebra.opnorm), Nothing, Sc
+iMLBase.CallbackSet{Tuple{}, Tuple{SciMLBase.Disc
+reteCallback{ADORE.var"#quaternion_renormalize_ca
+llback##1#quaternion_renormalize_callback##2", AD
+ORE.var"#affect!#quaternion_renormalize_callback#
+#0"{Int64}, typeof(SciMLBase.INITIALIZE_DEFAULT),
+ typeof(SciMLBase.FINALIZE_DEFAULT), Nothing, Tup
+le{}}, SciMLBase.DiscreteCallback{ADORE.var"#30#3
+1", ADORE.var"#print_progress#29"{SimulationConfi
+g, Base.RefValue{Float64}, Scales}, typeof(SciMLB
+ase.INITIALIZE_DEFAULT), typeof(SciMLBase.FINALIZ
+E_DEFAULT), Nothing, Tuple{}}}}, typeof(DiffEqBas
+e.ODE_DEFAULT_ISOUTOFDOMAIN), typeof(DiffEqBase.O
+DE_DEFAULT_PROG_MESSAGE), typeof(DiffEqBase.ODE_D
+EFAULT_UNSTABLE_CHECK), DataStructures.BinaryHeap
+{Float64, DataStructures.FasterForward}, DataStru
+ctures.BinaryHeap{Float64, DataStructures.FasterF
+orward}, Nothing, Nothing, Int64, Tuple{}, Float6
+4, Tuple{}, OrdinaryDiffEqCore.DEVerbosity{SciMLL
+ogging.Minimal, SciMLLogging.Minimal, SciMLLoggin
+g.WarnLevel, SciMLLogging.WarnLevel, SciMLLogging
+.WarnLevel, SciMLLogging.WarnLevel, SciMLLogging.
+WarnLevel, SciMLLogging.WarnLevel, SciMLLogging.S
+ilent, SciMLLogging.Silent, SciMLLogging.Silent, 
+SciMLLogging.Silent, SciMLLogging.Silent, SciMLLo
+gging.Silent, SciMLLogging.WarnLevel, SciMLLoggin
+g.Silent, SciMLLogging.Silent, SciMLLogging.Silen
+t, SciMLLogging.WarnLevel, SciMLLogging.Silent, S
+ciMLLogging.WarnLevel, SciMLLogging.Silent, SciML
+Logging.Silent, SciMLLogging.Silent, SciMLLogging
+.Silent, SciMLLogging.Silent, SciMLLogging.Silent
+, SciMLLogging.Silent, SciMLLogging.Silent, SciML
+Logging.Silent, SciMLLogging.Silent, SciMLLogging
+.Silent}, Nothing}, Vector{Float64}, Float64, Not
+hing, DiffEqBase.DefaultInit, Nothing, OrdinaryDi
+ffEqCore.DummyController, Random.TaskLocalRNG, No
+thing, Nothing, Nothing, Nothing, Nothing, Nothin
+g})
+所在位置 行:1 字符: 1
++ julia --project=@. run_dynamics.jl > recent_log
+.txt 2>&1
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (ERR 
+   OR: LoadErro...hing, Nothing}):String) [], R  
+  emoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+The function `print_progress` exists, but no meth
+od is defined for this combination of argument ty
+pes.
+
+Closest candidates are:
+  (::ADORE.var"#print_progress#29")(::Any, !Match
+ed::Any, !Matched::Any)
+   @ ADORE E:\antigravity_folder\ADORE_V2_jl\src\
+Dynamics\driver.jl:115
+
+Stacktrace:
+  [1] apply_discrete_callback!
+    @ C:\Users\yuxinlu_qh\.julia\packages\DiffEqB
+ase\4RFWW\src\callbacks.jl:526 [inlined]
+  [2] apply_discrete_callback!
+    @ C:\Users\yuxinlu_qh\.julia\packages\DiffEqB
+ase\4RFWW\src\callbacks.jl:573 [inlined]
+  [3] apply_discrete_callback!
+    @ C:\Users\yuxinlu_qh\.julia\packages\DiffEqB
+ase\4RFWW\src\callbacks.jl:546 [inlined]
+  [4] handle_callbacks!(integrator::OrdinaryDiffE
+qCore.ODEIntegrator{OrdinaryDiffEqBDF.FBDF{5, 0, 
+ADTypes.AutoFiniteDiff{Val{:forward}, Val{:forwar
+d}, Val{:hcentral}, Nothing, Nothing, Int64}, Not
+hing, OrdinaryDiffEqNonlinearSolve.NLNewton{Ratio
+nal{Int64}, Rational{Int64}, Rational{Int64}, Not
+hing}, typeof(OrdinaryDiffEqCore.DEFAULT_PRECS), 
+Val{:forward}(), true, nothing, Nothing, Nothing,
+ typeof(OrdinaryDiffEqCore.trivial_limiter!)}, tr
+ue, Vector{Float64}, Nothing, Float64, Tuple{Vect
+or{Float64}}, Float64, Float64, Float64, Float64,
+ Vector{Vector{Float64}}, SciMLBase.ODESolution{F
+loat64, 2, Vector{Vector{Float64}}, Nothing, Noth
+ing, Vector{Float64}, Vector{Vector{Vector{Float6
+4}}}, Nothing, SciMLBase.ODEProblem{Vector{Float6
+4}, Tuple{Float64, Float64}, true, Tuple{Vector{F
+loat64}}, SciMLBase.ODEFunction{true, SciMLBase.A
+utoSpecialize, FunctionWrappersWrappers.FunctionW
+rappersWrapper{Tuple{FunctionWrappers.FunctionWra
+pper{Nothing, Tuple{Vector{Float64}, Vector{Float
+64}, Tuple{Vector{Float64}}, Float64}}}, false}, 
+LinearAlgebra.UniformScaling{Bool}, Nothing, Noth
+ing, Nothing, Nothing, Nothing, Nothing, Nothing,
+ Nothing, Nothing, Nothing, Nothing, Nothing, typ
+eof(SciMLBase.DEFAULT_OBSERVED), Nothing, Nothing
+, Nothing, Nothing}, @Kwargs{}, SciMLBase.Standar
+dODEProblem}, OrdinaryDiffEqBDF.FBDF{5, 0, ADType
+s.AutoFiniteDiff{Val{:forward}, Val{:forward}, Va
+l{:hcentral}, Nothing, Nothing, Int64}, Nothing, 
+OrdinaryDiffEqNonlinearSolve.NLNewton{Rational{In
+t64}, Rational{Int64}, Rational{Int64}, Nothing},
+ typeof(OrdinaryDiffEqCore.DEFAULT_PRECS), Val{:f
+orward}(), true, nothing, Nothing, Nothing, typeo
+f(OrdinaryDiffEqCore.trivial_limiter!)}, Ordinary
+DiffEqCore.InterpolationData{SciMLBase.ODEFunctio
+n{true, SciMLBase.AutoSpecialize, FunctionWrapper
+sWrappers.FunctionWrappersWrapper{Tuple{FunctionW
+rappers.FunctionWrapper{Nothing, Tuple{Vector{Flo
+at64}, Vector{Float64}, Tuple{Vector{Float64}}, F
+loat64}}}, false}, LinearAlgebra.UniformScaling{B
+ool}, Nothing, Nothing, Nothing, Nothing, Nothing
+, Nothing, Nothing, Nothing, Nothing, Nothing, No
+thing, Nothing, typeof(SciMLBase.DEFAULT_OBSERVED
+), Nothing, Nothing, Nothing, Nothing}, Vector{Ve
+ctor{Float64}}, Vector{Float64}, Vector{Vector{Ve
+ctor{Float64}}}, Nothing, OrdinaryDiffEqBDF.FBDFC
+ache{5, OrdinaryDiffEqNonlinearSolve.NLSolver{Ord
+inaryDiffEqNonlinearSolve.NLNewton{Rational{Int64
+}, Rational{Int64}, Rational{Int64}, Nothing}, tr
+ue, Vector{Float64}, Float64, Nothing, Float64, O
+rdinaryDiffEqNonlinearSolve.NLNewtonCache{Vector{
+Float64}, Float64, Float64, Vector{Float64}, Matr
+ix{Float64}, Matrix{Float64}, SciMLBase.UJacobian
+Wrapper{true, SciMLBase.ODEFunction{true, SciMLBa
+se.AutoSpecialize, FunctionWrappersWrappers.Funct
+ionWrappersWrapper{Tuple{FunctionWrappers.Functio
+nWrapper{Nothing, Tuple{Vector{Float64}, Vector{F
+loat64}, Tuple{Vector{Float64}}, Float64}}}, fals
+e}, LinearAlgebra.UniformScaling{Bool}, Nothing, 
+Nothing, Nothing, Nothing, Nothing, Nothing, Noth
+ing, Nothing, Nothing, Nothing, Nothing, Nothing,
+ typeof(SciMLBase.DEFAULT_OBSERVED), Nothing, Not
+hing, Nothing, Nothing}, Float64, Tuple{Vector{Fl
+oat64}}}, Tuple{DifferentiationInterfaceFiniteDif
+fExt.FiniteDiffTwoArgJacobianPrep{Nothing, Finite
+Diff.JacobianCache{Vector{Float64}, Vector{Float6
+4}, Vector{Float64}, Vector{Float64}, UnitRange{I
+nt64}, Nothing, Val{:forward}(), Float64}, Float6
+4, Float64, Int64}, DifferentiationInterfaceFinit
+eDiffExt.FiniteDiffTwoArgJacobianPrep{Nothing, Fi
+niteDiff.JacobianCache{Vector{Float64}, Vector{Fl
+oat64}, Vector{Float64}, Vector{Float64}, UnitRan
+ge{Int64}, Nothing, Val{:forward}(), Float64}, Fl
+oat64, Float64, Int64}}, LinearSolve.LinearCache{
+Matrix{Float64}, Vector{Float64}, Vector{Float64}
+, SciMLBase.NullParameters, LinearSolve.DefaultLi
+nearSolver, LinearSolve.DefaultLinearSolverInit{L
+inearAlgebra.LU{Float64, Matrix{Float64}, Vector{
+Int64}}, LinearAlgebra.QRCompactWY{Float64, Matri
+x{Float64}, Matrix{Float64}}, Nothing, Nothing, N
+othing, Nothing, Nothing, Nothing, Tuple{LinearAl
+gebra.LU{Float64, Matrix{Float64}, Vector{Int64}}
+, Vector{Int64}}, Tuple{LinearAlgebra.LU{Float64,
+ Matrix{Float64}, Vector{Int64}}, Vector{Int64}},
+ Nothing, Nothing, Nothing, LinearAlgebra.SVD{Flo
+at64, Float64, Matrix{Float64}, Vector{Float64}},
+ LinearAlgebra.Cholesky{Float64, Matrix{Float64}}
+, LinearAlgebra.Cholesky{Float64, Matrix{Float64}
+}, Tuple{LinearAlgebra.LU{Float64, Matrix{Float64
+}, Vector{Int32}}, Base.RefValue{Int32}}, Tuple{L
+inearAlgebra.LU{Float64, Matrix{Float64}, Vector{
+Int64}}, Base.RefValue{Int64}}, LinearAlgebra.QRP
+ivoted{Float64, Matrix{Float64}, Vector{Float64},
+ Vector{Int64}}, Nothing, Nothing, Nothing, Nothi
+ng, Nothing, Matrix{Float64}, Vector{Float64}}, L
+inearSolve.InvPreconditioner{LinearAlgebra.Diagon
+al{Float64, Vector{Float64}}}, LinearAlgebra.Diag
+onal{Float64, Vector{Float64}}, Float64, LinearSo
+lve.LinearVerbosity{SciMLLogging.Silent, SciMLLog
+ging.Silent, SciMLLogging.Silent, SciMLLogging.Si
+lent, SciMLLogging.Silent, SciMLLogging.Silent, S
+ciMLLogging.Silent, SciMLLogging.Silent, SciMLLog
+ging.WarnLevel, SciMLLogging.WarnLevel, SciMLLogg
+ing.Silent, SciMLLogging.Silent, SciMLLogging.Sil
+ent, SciMLLogging.Silent, SciMLLogging.Silent, Sc
+iMLLogging.Silent}, Bool, LinearSolve.LinearSolve
+Adjoint{Missing}}, Nothing}, Float64}, Vector{Flo
+at64}, Vector{Float64}, Vector{Float64}, Float64,
+ Vector{Float64}, Vector{Vector{Float64}}, Static
+ArraysCore.SMatrix{5, 6, Rational{Int64}, 30}, Fl
+oat64, Vector{Float64}, Vector{Float64}, typeof(O
+rdinaryDiffEqCore.trivial_limiter!), Matrix{Float
+64}}, Nothing}, SciMLBase.DEStats, Nothing, Nothi
+ng, Nothing, Nothing}, SciMLBase.ODEFunction{true
+, SciMLBase.AutoSpecialize, FunctionWrappersWrapp
+ers.FunctionWrappersWrapper{Tuple{FunctionWrapper
+s.FunctionWrapper{Nothing, Tuple{Vector{Float64},
+ Vector{Float64}, Tuple{Vector{Float64}}, Float64
+}}}, false}, LinearAlgebra.UniformScaling{Bool}, 
+Nothing, Nothing, Nothing, Nothing, Nothing, Noth
+ing, Nothing, Nothing, Nothing, Nothing, Nothing,
+ Nothing, typeof(SciMLBase.DEFAULT_OBSERVED), Not
+hing, Nothing, Nothing, Nothing}, OrdinaryDiffEqB
+DF.FBDFCache{5, OrdinaryDiffEqNonlinearSolve.NLSo
+lver{OrdinaryDiffEqNonlinearSolve.NLNewton{Ration
+al{Int64}, Rational{Int64}, Rational{Int64}, Noth
+ing}, true, Vector{Float64}, Float64, Nothing, Fl
+oat64, OrdinaryDiffEqNonlinearSolve.NLNewtonCache
+{Vector{Float64}, Float64, Float64, Vector{Float6
+4}, Matrix{Float64}, Matrix{Float64}, SciMLBase.U
+JacobianWrapper{true, SciMLBase.ODEFunction{true,
+ SciMLBase.AutoSpecialize, FunctionWrappersWrappe
+rs.FunctionWrappersWrapper{Tuple{FunctionWrappers
+.FunctionWrapper{Nothing, Tuple{Vector{Float64}, 
+Vector{Float64}, Tuple{Vector{Float64}}, Float64}
+}}, false}, LinearAlgebra.UniformScaling{Bool}, N
+othing, Nothing, Nothing, Nothing, Nothing, Nothi
+ng, Nothing, Nothing, Nothing, Nothing, Nothing, 
+Nothing, typeof(SciMLBase.DEFAULT_OBSERVED), Noth
+ing, Nothing, Nothing, Nothing}, Float64, Tuple{V
+ector{Float64}}}, Tuple{DifferentiationInterfaceF
+initeDiffExt.FiniteDiffTwoArgJacobianPrep{Nothing
+, FiniteDiff.JacobianCache{Vector{Float64}, Vecto
+r{Float64}, Vector{Float64}, Vector{Float64}, Uni
+tRange{Int64}, Nothing, Val{:forward}(), Float64}
+, Float64, Float64, Int64}, DifferentiationInterf
+aceFiniteDiffExt.FiniteDiffTwoArgJacobianPrep{Not
+hing, FiniteDiff.JacobianCache{Vector{Float64}, V
+ector{Float64}, Vector{Float64}, Vector{Float64},
+ UnitRange{Int64}, Nothing, Val{:forward}(), Floa
+t64}, Float64, Float64, Int64}}, LinearSolve.Line
+arCache{Matrix{Float64}, Vector{Float64}, Vector{
+Float64}, SciMLBase.NullParameters, LinearSolve.D
+efaultLinearSolver, LinearSolve.DefaultLinearSolv
+erInit{LinearAlgebra.LU{Float64, Matrix{Float64},
+ Vector{Int64}}, LinearAlgebra.QRCompactWY{Float6
+4, Matrix{Float64}, Matrix{Float64}}, Nothing, No
+thing, Nothing, Nothing, Nothing, Nothing, Tuple{
+LinearAlgebra.LU{Float64, Matrix{Float64}, Vector
+{Int64}}, Vector{Int64}}, Tuple{LinearAlgebra.LU{
+Float64, Matrix{Float64}, Vector{Int64}}, Vector{
+Int64}}, Nothing, Nothing, Nothing, LinearAlgebra
+.SVD{Float64, Float64, Matrix{Float64}, Vector{Fl
+oat64}}, LinearAlgebra.Cholesky{Float64, Matrix{F
+loat64}}, LinearAlgebra.Cholesky{Float64, Matrix{
+Float64}}, Tuple{LinearAlgebra.LU{Float64, Matrix
+{Float64}, Vector{Int32}}, Base.RefValue{Int32}},
+ Tuple{LinearAlgebra.LU{Float64, Matrix{Float64},
+ Vector{Int64}}, Base.RefValue{Int64}}, LinearAlg
+ebra.QRPivoted{Float64, Matrix{Float64}, Vector{F
+loat64}, Vector{Int64}}, Nothing, Nothing, Nothin
+g, Nothing, Nothing, Matrix{Float64}, Vector{Floa
+t64}}, LinearSolve.InvPreconditioner{LinearAlgebr
+a.Diagonal{Float64, Vector{Float64}}}, LinearAlge
+bra.Diagonal{Float64, Vector{Float64}}, Float64, 
+LinearSolve.LinearVerbosity{SciMLLogging.Silent, 
+SciMLLogging.Silent, SciMLLogging.Silent, SciMLLo
+gging.Silent, SciMLLogging.Silent, SciMLLogging.S
+ilent, SciMLLogging.Silent, SciMLLogging.Silent, 
+SciMLLogging.WarnLevel, SciMLLogging.WarnLevel, S
+ciMLLogging.Silent, SciMLLogging.Silent, SciMLLog
+ging.Silent, SciMLLogging.Silent, SciMLLogging.Si
+lent, SciMLLogging.Silent}, Bool, LinearSolve.Lin
+earSolveAdjoint{Missing}}, Nothing}, Float64}, Ve
+ctor{Float64}, Vector{Float64}, Vector{Float64}, 
+Float64, Vector{Float64}, Vector{Vector{Float64}}
+, StaticArraysCore.SMatrix{5, 6, Rational{Int64},
+ 30}, Float64, Vector{Float64}, Vector{Float64}, 
+typeof(OrdinaryDiffEqCore.trivial_limiter!), Matr
+ix{Float64}}, OrdinaryDiffEqCore.DEOptions{Float6
+4, Float64, Float64, Float64, OrdinaryDiffEqCore.
+DummyController, typeof(DiffEqBase.ODE_DEFAULT_NO
+RM), typeof(LinearAlgebra.opnorm), Nothing, SciML
+Base.CallbackSet{Tuple{}, Tuple{SciMLBase.Discret
+eCallback{ADORE.var"#quaternion_renormalize_callb
+ack##1#quaternion_renormalize_callback##2", ADORE
+.var"#affect!#quaternion_renormalize_callback##0"
+{Int64}, typeof(SciMLBase.INITIALIZE_DEFAULT), ty
+peof(SciMLBase.FINALIZE_DEFAULT), Nothing, Tuple{
+}}, SciMLBase.DiscreteCallback{ADORE.var"#30#31",
+ ADORE.var"#print_progress#29"{SimulationConfig, 
+Base.RefValue{Float64}, Scales}, typeof(SciMLBase
+.INITIALIZE_DEFAULT), typeof(SciMLBase.FINALIZE_D
+EFAULT), Nothing, Tuple{}}}}, typeof(DiffEqBase.O
+DE_DEFAULT_ISOUTOFDOMAIN), typeof(DiffEqBase.ODE_
+DEFAULT_PROG_MESSAGE), typeof(DiffEqBase.ODE_DEFA
+ULT_UNSTABLE_CHECK), DataStructures.BinaryHeap{Fl
+oat64, DataStructures.FasterForward}, DataStructu
+res.BinaryHeap{Float64, DataStructures.FasterForw
+ard}, Nothing, Nothing, Int64, Tuple{}, Float64, 
+Tuple{}, OrdinaryDiffEqCore.DEVerbosity{SciMLLogg
+ing.Minimal, SciMLLogging.Minimal, SciMLLogging.W
+arnLevel, SciMLLogging.WarnLevel, SciMLLogging.Wa
+rnLevel, SciMLLogging.WarnLevel, SciMLLogging.War
+nLevel, SciMLLogging.WarnLevel, SciMLLogging.Sile
+nt, SciMLLogging.Silent, SciMLLogging.Silent, Sci
+MLLogging.Silent, SciMLLogging.Silent, SciMLLoggi
+ng.Silent, SciMLLogging.WarnLevel, SciMLLogging.S
+ilent, SciMLLogging.Silent, SciMLLogging.Silent, 
+SciMLLogging.WarnLevel, SciMLLogging.Silent, SciM
+LLogging.WarnLevel, SciMLLogging.Silent, SciMLLog
+ging.Silent, SciMLLogging.Silent, SciMLLogging.Si
+lent, SciMLLogging.Silent, SciMLLogging.Silent, S
+ciMLLogging.Silent, SciMLLogging.Silent, SciMLLog
+ging.Silent, SciMLLogging.Silent, SciMLLogging.Si
+lent}, Nothing}, Vector{Float64}, Float64, Nothin
+g, DiffEqBase.DefaultInit, Nothing, OrdinaryDiffE
+qCore.DummyController, Random.TaskLocalRNG, Nothi
+ng, Nothing, Nothing, Nothing, Nothing, Nothing})
+    @ OrdinaryDiffEqCore C:\Users\yuxinlu_qh\.jul
+ia\packages\OrdinaryDiffEqCore\q5Gdj\src\integrat
+ors\integrator_utils.jl:673
+  [5] _loopfooter!(integrator::OrdinaryDiffEqCore
+.ODEIntegrator{OrdinaryDiffEqBDF.FBDF{5, 0, ADTyp
+es.AutoFiniteDiff{Val{:forward}, Val{:forward}, V
+al{:hcentral}, Nothing, Nothing, Int64}, Nothing,
+ OrdinaryDiffEqNonlinearSolve.NLNewton{Rational{I
+nt64}, Rational{Int64}, Rational{Int64}, Nothing}
+, typeof(OrdinaryDiffEqCore.DEFAULT_PRECS), Val{:
+forward}(), true, nothing, Nothing, Nothing, type
+of(OrdinaryDiffEqCore.trivial_limiter!)}, true, V
+ector{Float64}, Nothing, Float64, Tuple{Vector{Fl
+oat64}}, Float64, Float64, Float64, Float64, Vect
+or{Vector{Float64}}, SciMLBase.ODESolution{Float6
+4, 2, Vector{Vector{Float64}}, Nothing, Nothing, 
+Vector{Float64}, Vector{Vector{Vector{Float64}}},
+ Nothing, SciMLBase.ODEProblem{Vector{Float64}, T
+uple{Float64, Float64}, true, Tuple{Vector{Float6
+4}}, SciMLBase.ODEFunction{true, SciMLBase.AutoSp
+ecialize, FunctionWrappersWrappers.FunctionWrappe
+rsWrapper{Tuple{FunctionWrappers.FunctionWrapper{
+Nothing, Tuple{Vector{Float64}, Vector{Float64}, 
+Tuple{Vector{Float64}}, Float64}}}, false}, Linea
+rAlgebra.UniformScaling{Bool}, Nothing, Nothing, 
+Nothing, Nothing, Nothing, Nothing, Nothing, Noth
+ing, Nothing, Nothing, Nothing, Nothing, typeof(S
+ciMLBase.DEFAULT_OBSERVED), Nothing, Nothing, Not
+hing, Nothing}, @Kwargs{}, SciMLBase.StandardODEP
+roblem}, OrdinaryDiffEqBDF.FBDF{5, 0, ADTypes.Aut
+oFiniteDiff{Val{:forward}, Val{:forward}, Val{:hc
+entral}, Nothing, Nothing, Int64}, Nothing, Ordin
+aryDiffEqNonlinearSolve.NLNewton{Rational{Int64},
+ Rational{Int64}, Rational{Int64}, Nothing}, type
+of(OrdinaryDiffEqCore.DEFAULT_PRECS), Val{:forwar
+d}(), true, nothing, Nothing, Nothing, typeof(Ord
+inaryDiffEqCore.trivial_limiter!)}, OrdinaryDiffE
+qCore.InterpolationData{SciMLBase.ODEFunction{tru
+e, SciMLBase.AutoSpecialize, FunctionWrappersWrap
+pers.FunctionWrappersWrapper{Tuple{FunctionWrappe
+rs.FunctionWrapper{Nothing, Tuple{Vector{Float64}
+, Vector{Float64}, Tuple{Vector{Float64}}, Float6
+4}}}, false}, LinearAlgebra.UniformScaling{Bool},
+ Nothing, Nothing, Nothing, Nothing, Nothing, Not
+hing, Nothing, Nothing, Nothing, Nothing, Nothing
+, Nothing, typeof(SciMLBase.DEFAULT_OBSERVED), No
+thing, Nothing, Nothing, Nothing}, Vector{Vector{
+Float64}}, Vector{Float64}, Vector{Vector{Vector{
+Float64}}}, Nothing, OrdinaryDiffEqBDF.FBDFCache{
+5, OrdinaryDiffEqNonlinearSolve.NLSolver{Ordinary
+DiffEqNonlinearSolve.NLNewton{Rational{Int64}, Ra
+tional{Int64}, Rational{Int64}, Nothing}, true, V
+ector{Float64}, Float64, Nothing, Float64, Ordina
+ryDiffEqNonlinearSolve.NLNewtonCache{Vector{Float
+64}, Float64, Float64, Vector{Float64}, Matrix{Fl
+oat64}, Matrix{Float64}, SciMLBase.UJacobianWrapp
+er{true, SciMLBase.ODEFunction{true, SciMLBase.Au
+toSpecialize, FunctionWrappersWrappers.FunctionWr
+appersWrapper{Tuple{FunctionWrappers.FunctionWrap
+per{Nothing, Tuple{Vector{Float64}, Vector{Float6
+4}, Tuple{Vector{Float64}}, Float64}}}, false}, L
+inearAlgebra.UniformScaling{Bool}, Nothing, Nothi
+ng, Nothing, Nothing, Nothing, Nothing, Nothing, 
+Nothing, Nothing, Nothing, Nothing, Nothing, type
+of(SciMLBase.DEFAULT_OBSERVED), Nothing, Nothing,
+ Nothing, Nothing}, Float64, Tuple{Vector{Float64
+}}}, Tuple{DifferentiationInterfaceFiniteDiffExt.
+FiniteDiffTwoArgJacobianPrep{Nothing, FiniteDiff.
+JacobianCache{Vector{Float64}, Vector{Float64}, V
+ector{Float64}, Vector{Float64}, UnitRange{Int64}
+, Nothing, Val{:forward}(), Float64}, Float64, Fl
+oat64, Int64}, DifferentiationInterfaceFiniteDiff
+Ext.FiniteDiffTwoArgJacobianPrep{Nothing, FiniteD
+iff.JacobianCache{Vector{Float64}, Vector{Float64
+}, Vector{Float64}, Vector{Float64}, UnitRange{In
+t64}, Nothing, Val{:forward}(), Float64}, Float64
+, Float64, Int64}}, LinearSolve.LinearCache{Matri
+x{Float64}, Vector{Float64}, Vector{Float64}, Sci
+MLBase.NullParameters, LinearSolve.DefaultLinearS
+olver, LinearSolve.DefaultLinearSolverInit{Linear
+Algebra.LU{Float64, Matrix{Float64}, Vector{Int64
+}}, LinearAlgebra.QRCompactWY{Float64, Matrix{Flo
+at64}, Matrix{Float64}}, Nothing, Nothing, Nothin
+g, Nothing, Nothing, Nothing, Tuple{LinearAlgebra
+.LU{Float64, Matrix{Float64}, Vector{Int64}}, Vec
+tor{Int64}}, Tuple{LinearAlgebra.LU{Float64, Matr
+ix{Float64}, Vector{Int64}}, Vector{Int64}}, Noth
+ing, Nothing, Nothing, LinearAlgebra.SVD{Float64,
+ Float64, Matrix{Float64}, Vector{Float64}}, Line
+arAlgebra.Cholesky{Float64, Matrix{Float64}}, Lin
+earAlgebra.Cholesky{Float64, Matrix{Float64}}, Tu
+ple{LinearAlgebra.LU{Float64, Matrix{Float64}, Ve
+ctor{Int32}}, Base.RefValue{Int32}}, Tuple{Linear
+Algebra.LU{Float64, Matrix{Float64}, Vector{Int64
+}}, Base.RefValue{Int64}}, LinearAlgebra.QRPivote
+d{Float64, Matrix{Float64}, Vector{Float64}, Vect
+or{Int64}}, Nothing, Nothing, Nothing, Nothing, N
+othing, Matrix{Float64}, Vector{Float64}}, Linear
+Solve.InvPreconditioner{LinearAlgebra.Diagonal{Fl
+oat64, Vector{Float64}}}, LinearAlgebra.Diagonal{
+Float64, Vector{Float64}}, Float64, LinearSolve.L
+inearVerbosity{SciMLLogging.Silent, SciMLLogging.
+Silent, SciMLLogging.Silent, SciMLLogging.Silent,
+ SciMLLogging.Silent, SciMLLogging.Silent, SciMLL
+ogging.Silent, SciMLLogging.Silent, SciMLLogging.
+WarnLevel, SciMLLogging.WarnLevel, SciMLLogging.S
+ilent, SciMLLogging.Silent, SciMLLogging.Silent, 
+SciMLLogging.Silent, SciMLLogging.Silent, SciMLLo
+gging.Silent}, Bool, LinearSolve.LinearSolveAdjoi
+nt{Missing}}, Nothing}, Float64}, Vector{Float64}
+, Vector{Float64}, Vector{Float64}, Float64, Vect
+or{Float64}, Vector{Vector{Float64}}, StaticArray
+sCore.SMatrix{5, 6, Rational{Int64}, 30}, Float64
+, Vector{Float64}, Vector{Float64}, typeof(Ordina
+ryDiffEqCore.trivial_limiter!), Matrix{Float64}},
+ Nothing}, SciMLBase.DEStats, Nothing, Nothing, N
+othing, Nothing}, SciMLBase.ODEFunction{true, Sci
+MLBase.AutoSpecialize, FunctionWrappersWrappers.F
+unctionWrappersWrapper{Tuple{FunctionWrappers.Fun
+ctionWrapper{Nothing, Tuple{Vector{Float64}, Vect
+or{Float64}, Tuple{Vector{Float64}}, Float64}}}, 
+false}, LinearAlgebra.UniformScaling{Bool}, Nothi
+ng, Nothing, Nothing, Nothing, Nothing, Nothing, 
+Nothing, Nothing, Nothing, Nothing, Nothing, Noth
+ing, typeof(SciMLBase.DEFAULT_OBSERVED), Nothing,
+ Nothing, Nothing, Nothing}, OrdinaryDiffEqBDF.FB
+DFCache{5, OrdinaryDiffEqNonlinearSolve.NLSolver{
+OrdinaryDiffEqNonlinearSolve.NLNewton{Rational{In
+t64}, Rational{Int64}, Rational{Int64}, Nothing},
+ true, Vector{Float64}, Float64, Nothing, Float64
+, OrdinaryDiffEqNonlinearSolve.NLNewtonCache{Vect
+or{Float64}, Float64, Float64, Vector{Float64}, M
+atrix{Float64}, Matrix{Float64}, SciMLBase.UJacob
+ianWrapper{true, SciMLBase.ODEFunction{true, SciM
+LBase.AutoSpecialize, FunctionWrappersWrappers.Fu
+nctionWrappersWrapper{Tuple{FunctionWrappers.Func
+tionWrapper{Nothing, Tuple{Vector{Float64}, Vecto
+r{Float64}, Tuple{Vector{Float64}}, Float64}}}, f
+alse}, LinearAlgebra.UniformScaling{Bool}, Nothin
+g, Nothing, Nothing, Nothing, Nothing, Nothing, N
+othing, Nothing, Nothing, Nothing, Nothing, Nothi
+ng, typeof(SciMLBase.DEFAULT_OBSERVED), Nothing, 
+Nothing, Nothing, Nothing}, Float64, Tuple{Vector
+{Float64}}}, Tuple{DifferentiationInterfaceFinite
+DiffExt.FiniteDiffTwoArgJacobianPrep{Nothing, Fin
+iteDiff.JacobianCache{Vector{Float64}, Vector{Flo
+at64}, Vector{Float64}, Vector{Float64}, UnitRang
+e{Int64}, Nothing, Val{:forward}(), Float64}, Flo
+at64, Float64, Int64}, DifferentiationInterfaceFi
+niteDiffExt.FiniteDiffTwoArgJacobianPrep{Nothing,
+ FiniteDiff.JacobianCache{Vector{Float64}, Vector
+{Float64}, Vector{Float64}, Vector{Float64}, Unit
+Range{Int64}, Nothing, Val{:forward}(), Float64},
+ Float64, Float64, Int64}}, LinearSolve.LinearCac
+he{Matrix{Float64}, Vector{Float64}, Vector{Float
+64}, SciMLBase.NullParameters, LinearSolve.Defaul
+tLinearSolver, LinearSolve.DefaultLinearSolverIni
+t{LinearAlgebra.LU{Float64, Matrix{Float64}, Vect
+or{Int64}}, LinearAlgebra.QRCompactWY{Float64, Ma
+trix{Float64}, Matrix{Float64}}, Nothing, Nothing
+, Nothing, Nothing, Nothing, Nothing, Tuple{Linea
+rAlgebra.LU{Float64, Matrix{Float64}, Vector{Int6
+4}}, Vector{Int64}}, Tuple{LinearAlgebra.LU{Float
+64, Matrix{Float64}, Vector{Int64}}, Vector{Int64
+}}, Nothing, Nothing, Nothing, LinearAlgebra.SVD{
+Float64, Float64, Matrix{Float64}, Vector{Float64
+}}, LinearAlgebra.Cholesky{Float64, Matrix{Float6
+4}}, LinearAlgebra.Cholesky{Float64, Matrix{Float
+64}}, Tuple{LinearAlgebra.LU{Float64, Matrix{Floa
+t64}, Vector{Int32}}, Base.RefValue{Int32}}, Tupl
+e{LinearAlgebra.LU{Float64, Matrix{Float64}, Vect
+or{Int64}}, Base.RefValue{Int64}}, LinearAlgebra.
+QRPivoted{Float64, Matrix{Float64}, Vector{Float6
+4}, Vector{Int64}}, Nothing, Nothing, Nothing, No
+thing, Nothing, Matrix{Float64}, Vector{Float64}}
+, LinearSolve.InvPreconditioner{LinearAlgebra.Dia
+gonal{Float64, Vector{Float64}}}, LinearAlgebra.D
+iagonal{Float64, Vector{Float64}}, Float64, Linea
+rSolve.LinearVerbosity{SciMLLogging.Silent, SciML
+Logging.Silent, SciMLLogging.Silent, SciMLLogging
+.Silent, SciMLLogging.Silent, SciMLLogging.Silent
+, SciMLLogging.Silent, SciMLLogging.Silent, SciML
+Logging.WarnLevel, SciMLLogging.WarnLevel, SciMLL
+ogging.Silent, SciMLLogging.Silent, SciMLLogging.
+Silent, SciMLLogging.Silent, SciMLLogging.Silent,
+ SciMLLogging.Silent}, Bool, LinearSolve.LinearSo
+lveAdjoint{Missing}}, Nothing}, Float64}, Vector{
+Float64}, Vector{Float64}, Vector{Float64}, Float
+64, Vector{Float64}, Vector{Vector{Float64}}, Sta
+ticArraysCore.SMatrix{5, 6, Rational{Int64}, 30},
+ Float64, Vector{Float64}, Vector{Float64}, typeo
+f(OrdinaryDiffEqCore.trivial_limiter!), Matrix{Fl
+oat64}}, OrdinaryDiffEqCore.DEOptions{Float64, Fl
+oat64, Float64, Float64, OrdinaryDiffEqCore.Dummy
+Controller, typeof(DiffEqBase.ODE_DEFAULT_NORM), 
+typeof(LinearAlgebra.opnorm), Nothing, SciMLBase.
+CallbackSet{Tuple{}, Tuple{SciMLBase.DiscreteCall
+back{ADORE.var"#quaternion_renormalize_callback##
+1#quaternion_renormalize_callback##2", ADORE.var"
+#affect!#quaternion_renormalize_callback##0"{Int6
+4}, typeof(SciMLBase.INITIALIZE_DEFAULT), typeof(
+SciMLBase.FINALIZE_DEFAULT), Nothing, Tuple{}}, S
+ciMLBase.DiscreteCallback{ADORE.var"#30#31", ADOR
+E.var"#print_progress#29"{SimulationConfig, Base.
+RefValue{Float64}, Scales}, typeof(SciMLBase.INIT
+IALIZE_DEFAULT), typeof(SciMLBase.FINALIZE_DEFAUL
+T), Nothing, Tuple{}}}}, typeof(DiffEqBase.ODE_DE
+FAULT_ISOUTOFDOMAIN), typeof(DiffEqBase.ODE_DEFAU
+LT_PROG_MESSAGE), typeof(DiffEqBase.ODE_DEFAULT_U
+NSTABLE_CHECK), DataStructures.BinaryHeap{Float64
+, DataStructures.FasterForward}, DataStructures.B
+inaryHeap{Float64, DataStructures.FasterForward},
+ Nothing, Nothing, Int64, Tuple{}, Float64, Tuple
+{}, OrdinaryDiffEqCore.DEVerbosity{SciMLLogging.M
+inimal, SciMLLogging.Minimal, SciMLLogging.WarnLe
+vel, SciMLLogging.WarnLevel, SciMLLogging.WarnLev
+el, SciMLLogging.WarnLevel, SciMLLogging.WarnLeve
+l, SciMLLogging.WarnLevel, SciMLLogging.Silent, S
+ciMLLogging.Silent, SciMLLogging.Silent, SciMLLog
+ging.Silent, SciMLLogging.Silent, SciMLLogging.Si
+lent, SciMLLogging.WarnLevel, SciMLLogging.Silent
+, SciMLLogging.Silent, SciMLLogging.Silent, SciML
+Logging.WarnLevel, SciMLLogging.Silent, SciMLLogg
+ing.WarnLevel, SciMLLogging.Silent, SciMLLogging.
+Silent, SciMLLogging.Silent, SciMLLogging.Silent,
+ SciMLLogging.Silent, SciMLLogging.Silent, SciMLL
+ogging.Silent, SciMLLogging.Silent, SciMLLogging.
+Silent, SciMLLogging.Silent, SciMLLogging.Silent}
+, Nothing}, Vector{Float64}, Float64, Nothing, Di
+ffEqBase.DefaultInit, Nothing, OrdinaryDiffEqCore
+.DummyController, Random.TaskLocalRNG, Nothing, N
+othing, Nothing, Nothing, Nothing, Nothing})
+    @ OrdinaryDiffEqCore C:\Users\yuxinlu_qh\.jul
+ia\packages\OrdinaryDiffEqCore\q5Gdj\src\integrat
+ors\integrator_utils.jl:526
+  [6] loopfooter!
+    @ C:\Users\yuxinlu_qh\.julia\packages\Ordinar
+yDiffEqCore\q5Gdj\src\integrators\integrator_util
+s.jl:477 [inlined]
+  [7] solve!(integrator::OrdinaryDiffEqCore.ODEIn
+tegrator{OrdinaryDiffEqBDF.FBDF{5, 0, ADTypes.Aut
+oFiniteDiff{Val{:forward}, Val{:forward}, Val{:hc
+entral}, Nothing, Nothing, Int64}, Nothing, Ordin
+aryDiffEqNonlinearSolve.NLNewton{Rational{Int64},
+ Rational{Int64}, Rational{Int64}, Nothing}, type
+of(OrdinaryDiffEqCore.DEFAULT_PRECS), Val{:forwar
+d}(), true, nothing, Nothing, Nothing, typeof(Ord
+inaryDiffEqCore.trivial_limiter!)}, true, Vector{
+Float64}, Nothing, Float64, Tuple{Vector{Float64}
+}, Float64, Float64, Float64, Float64, Vector{Vec
+tor{Float64}}, SciMLBase.ODESolution{Float64, 2, 
+Vector{Vector{Float64}}, Nothing, Nothing, Vector
+{Float64}, Vector{Vector{Vector{Float64}}}, Nothi
+ng, SciMLBase.ODEProblem{Vector{Float64}, Tuple{F
+loat64, Float64}, true, Tuple{Vector{Float64}}, S
+ciMLBase.ODEFunction{true, SciMLBase.AutoSpeciali
+ze, FunctionWrappersWrappers.FunctionWrappersWrap
+per{Tuple{FunctionWrappers.FunctionWrapper{Nothin
+g, Tuple{Vector{Float64}, Vector{Float64}, Tuple{
+Vector{Float64}}, Float64}}}, false}, LinearAlgeb
+ra.UniformScaling{Bool}, Nothing, Nothing, Nothin
+g, Nothing, Nothing, Nothing, Nothing, Nothing, N
+othing, Nothing, Nothing, Nothing, typeof(SciMLBa
+se.DEFAULT_OBSERVED), Nothing, Nothing, Nothing, 
+Nothing}, @Kwargs{}, SciMLBase.StandardODEProblem
+}, OrdinaryDiffEqBDF.FBDF{5, 0, ADTypes.AutoFinit
+eDiff{Val{:forward}, Val{:forward}, Val{:hcentral
+}, Nothing, Nothing, Int64}, Nothing, OrdinaryDif
+fEqNonlinearSolve.NLNewton{Rational{Int64}, Ratio
+nal{Int64}, Rational{Int64}, Nothing}, typeof(Ord
+inaryDiffEqCore.DEFAULT_PRECS), Val{:forward}(), 
+true, nothing, Nothing, Nothing, typeof(OrdinaryD
+iffEqCore.trivial_limiter!)}, OrdinaryDiffEqCore.
+InterpolationData{SciMLBase.ODEFunction{true, Sci
+MLBase.AutoSpecialize, FunctionWrappersWrappers.F
+unctionWrappersWrapper{Tuple{FunctionWrappers.Fun
+ctionWrapper{Nothing, Tuple{Vector{Float64}, Vect
+or{Float64}, Tuple{Vector{Float64}}, Float64}}}, 
+false}, LinearAlgebra.UniformScaling{Bool}, Nothi
+ng, Nothing, Nothing, Nothing, Nothing, Nothing, 
+Nothing, Nothing, Nothing, Nothing, Nothing, Noth
+ing, typeof(SciMLBase.DEFAULT_OBSERVED), Nothing,
+ Nothing, Nothing, Nothing}, Vector{Vector{Float6
+4}}, Vector{Float64}, Vector{Vector{Vector{Float6
+4}}}, Nothing, OrdinaryDiffEqBDF.FBDFCache{5, Ord
+inaryDiffEqNonlinearSolve.NLSolver{OrdinaryDiffEq
+NonlinearSolve.NLNewton{Rational{Int64}, Rational
+{Int64}, Rational{Int64}, Nothing}, true, Vector{
+Float64}, Float64, Nothing, Float64, OrdinaryDiff
+EqNonlinearSolve.NLNewtonCache{Vector{Float64}, F
+loat64, Float64, Vector{Float64}, Matrix{Float64}
+, Matrix{Float64}, SciMLBase.UJacobianWrapper{tru
+e, SciMLBase.ODEFunction{true, SciMLBase.AutoSpec
+ialize, FunctionWrappersWrappers.FunctionWrappers
+Wrapper{Tuple{FunctionWrappers.FunctionWrapper{No
+thing, Tuple{Vector{Float64}, Vector{Float64}, Tu
+ple{Vector{Float64}}, Float64}}}, false}, LinearA
+lgebra.UniformScaling{Bool}, Nothing, Nothing, No
+thing, Nothing, Nothing, Nothing, Nothing, Nothin
+g, Nothing, Nothing, Nothing, Nothing, typeof(Sci
+MLBase.DEFAULT_OBSERVED), Nothing, Nothing, Nothi
+ng, Nothing}, Float64, Tuple{Vector{Float64}}}, T
+uple{DifferentiationInterfaceFiniteDiffExt.Finite
+DiffTwoArgJacobianPrep{Nothing, FiniteDiff.Jacobi
+anCache{Vector{Float64}, Vector{Float64}, Vector{
+Float64}, Vector{Float64}, UnitRange{Int64}, Noth
+ing, Val{:forward}(), Float64}, Float64, Float64,
+ Int64}, DifferentiationInterfaceFiniteDiffExt.Fi
+niteDiffTwoArgJacobianPrep{Nothing, FiniteDiff.Ja
+cobianCache{Vector{Float64}, Vector{Float64}, Vec
+tor{Float64}, Vector{Float64}, UnitRange{Int64}, 
+Nothing, Val{:forward}(), Float64}, Float64, Floa
+t64, Int64}}, LinearSolve.LinearCache{Matrix{Floa
+t64}, Vector{Float64}, Vector{Float64}, SciMLBase
+.NullParameters, LinearSolve.DefaultLinearSolver,
+ LinearSolve.DefaultLinearSolverInit{LinearAlgebr
+a.LU{Float64, Matrix{Float64}, Vector{Int64}}, Li
+nearAlgebra.QRCompactWY{Float64, Matrix{Float64},
+ Matrix{Float64}}, Nothing, Nothing, Nothing, Not
+hing, Nothing, Nothing, Tuple{LinearAlgebra.LU{Fl
+oat64, Matrix{Float64}, Vector{Int64}}, Vector{In
+t64}}, Tuple{LinearAlgebra.LU{Float64, Matrix{Flo
+at64}, Vector{Int64}}, Vector{Int64}}, Nothing, N
+othing, Nothing, LinearAlgebra.SVD{Float64, Float
+64, Matrix{Float64}, Vector{Float64}}, LinearAlge
+bra.Cholesky{Float64, Matrix{Float64}}, LinearAlg
+ebra.Cholesky{Float64, Matrix{Float64}}, Tuple{Li
+nearAlgebra.LU{Float64, Matrix{Float64}, Vector{I
+nt32}}, Base.RefValue{Int32}}, Tuple{LinearAlgebr
+a.LU{Float64, Matrix{Float64}, Vector{Int64}}, Ba
+se.RefValue{Int64}}, LinearAlgebra.QRPivoted{Floa
+t64, Matrix{Float64}, Vector{Float64}, Vector{Int
+64}}, Nothing, Nothing, Nothing, Nothing, Nothing
+, Matrix{Float64}, Vector{Float64}}, LinearSolve.
+InvPreconditioner{LinearAlgebra.Diagonal{Float64,
+ Vector{Float64}}}, LinearAlgebra.Diagonal{Float6
+4, Vector{Float64}}, Float64, LinearSolve.LinearV
+erbosity{SciMLLogging.Silent, SciMLLogging.Silent
+, SciMLLogging.Silent, SciMLLogging.Silent, SciML
+Logging.Silent, SciMLLogging.Silent, SciMLLogging
+.Silent, SciMLLogging.Silent, SciMLLogging.WarnLe
+vel, SciMLLogging.WarnLevel, SciMLLogging.Silent,
+ SciMLLogging.Silent, SciMLLogging.Silent, SciMLL
+ogging.Silent, SciMLLogging.Silent, SciMLLogging.
+Silent}, Bool, LinearSolve.LinearSolveAdjoint{Mis
+sing}}, Nothing}, Float64}, Vector{Float64}, Vect
+or{Float64}, Vector{Float64}, Float64, Vector{Flo
+at64}, Vector{Vector{Float64}}, StaticArraysCore.
+SMatrix{5, 6, Rational{Int64}, 30}, Float64, Vect
+or{Float64}, Vector{Float64}, typeof(OrdinaryDiff
+EqCore.trivial_limiter!), Matrix{Float64}}, Nothi
+ng}, SciMLBase.DEStats, Nothing, Nothing, Nothing
+, Nothing}, SciMLBase.ODEFunction{true, SciMLBase
+.AutoSpecialize, FunctionWrappersWrappers.Functio
+nWrappersWrapper{Tuple{FunctionWrappers.FunctionW
+rapper{Nothing, Tuple{Vector{Float64}, Vector{Flo
+at64}, Tuple{Vector{Float64}}, Float64}}}, false}
+, LinearAlgebra.UniformScaling{Bool}, Nothing, No
+thing, Nothing, Nothing, Nothing, Nothing, Nothin
+g, Nothing, Nothing, Nothing, Nothing, Nothing, t
+ypeof(SciMLBase.DEFAULT_OBSERVED), Nothing, Nothi
+ng, Nothing, Nothing}, OrdinaryDiffEqBDF.FBDFCach
+e{5, OrdinaryDiffEqNonlinearSolve.NLSolver{Ordina
+ryDiffEqNonlinearSolve.NLNewton{Rational{Int64}, 
+Rational{Int64}, Rational{Int64}, Nothing}, true,
+ Vector{Float64}, Float64, Nothing, Float64, Ordi
+naryDiffEqNonlinearSolve.NLNewtonCache{Vector{Flo
+at64}, Float64, Float64, Vector{Float64}, Matrix{
+Float64}, Matrix{Float64}, SciMLBase.UJacobianWra
+pper{true, SciMLBase.ODEFunction{true, SciMLBase.
+AutoSpecialize, FunctionWrappersWrappers.Function
+WrappersWrapper{Tuple{FunctionWrappers.FunctionWr
+apper{Nothing, Tuple{Vector{Float64}, Vector{Floa
+t64}, Tuple{Vector{Float64}}, Float64}}}, false},
+ LinearAlgebra.UniformScaling{Bool}, Nothing, Not
+hing, Nothing, Nothing, Nothing, Nothing, Nothing
+, Nothing, Nothing, Nothing, Nothing, Nothing, ty
+peof(SciMLBase.DEFAULT_OBSERVED), Nothing, Nothin
+g, Nothing, Nothing}, Float64, Tuple{Vector{Float
+64}}}, Tuple{DifferentiationInterfaceFiniteDiffEx
+t.FiniteDiffTwoArgJacobianPrep{Nothing, FiniteDif
+f.JacobianCache{Vector{Float64}, Vector{Float64},
+ Vector{Float64}, Vector{Float64}, UnitRange{Int6
+4}, Nothing, Val{:forward}(), Float64}, Float64, 
+Float64, Int64}, DifferentiationInterfaceFiniteDi
+ffExt.FiniteDiffTwoArgJacobianPrep{Nothing, Finit
+eDiff.JacobianCache{Vector{Float64}, Vector{Float
+64}, Vector{Float64}, Vector{Float64}, UnitRange{
+Int64}, Nothing, Val{:forward}(), Float64}, Float
+64, Float64, Int64}}, LinearSolve.LinearCache{Mat
+rix{Float64}, Vector{Float64}, Vector{Float64}, S
+ciMLBase.NullParameters, LinearSolve.DefaultLinea
+rSolver, LinearSolve.DefaultLinearSolverInit{Line
+arAlgebra.LU{Float64, Matrix{Float64}, Vector{Int
+64}}, LinearAlgebra.QRCompactWY{Float64, Matrix{F
+loat64}, Matrix{Float64}}, Nothing, Nothing, Noth
+ing, Nothing, Nothing, Nothing, Tuple{LinearAlgeb
+ra.LU{Float64, Matrix{Float64}, Vector{Int64}}, V
+ector{Int64}}, Tuple{LinearAlgebra.LU{Float64, Ma
+trix{Float64}, Vector{Int64}}, Vector{Int64}}, No
+thing, Nothing, Nothing, LinearAlgebra.SVD{Float6
+4, Float64, Matrix{Float64}, Vector{Float64}}, Li
+nearAlgebra.Cholesky{Float64, Matrix{Float64}}, L
+inearAlgebra.Cholesky{Float64, Matrix{Float64}}, 
+Tuple{LinearAlgebra.LU{Float64, Matrix{Float64}, 
+Vector{Int32}}, Base.RefValue{Int32}}, Tuple{Line
+arAlgebra.LU{Float64, Matrix{Float64}, Vector{Int
+64}}, Base.RefValue{Int64}}, LinearAlgebra.QRPivo
+ted{Float64, Matrix{Float64}, Vector{Float64}, Ve
+ctor{Int64}}, Nothing, Nothing, Nothing, Nothing,
+ Nothing, Matrix{Float64}, Vector{Float64}}, Line
+arSolve.InvPreconditioner{LinearAlgebra.Diagonal{
+Float64, Vector{Float64}}}, LinearAlgebra.Diagona
+l{Float64, Vector{Float64}}, Float64, LinearSolve
+.LinearVerbosity{SciMLLogging.Silent, SciMLLoggin
+g.Silent, SciMLLogging.Silent, SciMLLogging.Silen
+t, SciMLLogging.Silent, SciMLLogging.Silent, SciM
+LLogging.Silent, SciMLLogging.Silent, SciMLLoggin
+g.WarnLevel, SciMLLogging.WarnLevel, SciMLLogging
+.Silent, SciMLLogging.Silent, SciMLLogging.Silent
+, SciMLLogging.Silent, SciMLLogging.Silent, SciML
+Logging.Silent}, Bool, LinearSolve.LinearSolveAdj
+oint{Missing}}, Nothing}, Float64}, Vector{Float6
+4}, Vector{Float64}, Vector{Float64}, Float64, Ve
+ctor{Float64}, Vector{Vector{Float64}}, StaticArr
+aysCore.SMatrix{5, 6, Rational{Int64}, 30}, Float
+64, Vector{Float64}, Vector{Float64}, typeof(Ordi
+naryDiffEqCore.trivial_limiter!), Matrix{Float64}
+}, OrdinaryDiffEqCore.DEOptions{Float64, Float64,
+ Float64, Float64, OrdinaryDiffEqCore.DummyContro
+ller, typeof(DiffEqBase.ODE_DEFAULT_NORM), typeof
+(LinearAlgebra.opnorm), Nothing, SciMLBase.Callba
+ckSet{Tuple{}, Tuple{SciMLBase.DiscreteCallback{A
+DORE.var"#quaternion_renormalize_callback##1#quat
+ernion_renormalize_callback##2", ADORE.var"#affec
+t!#quaternion_renormalize_callback##0"{Int64}, ty
+peof(SciMLBase.INITIALIZE_DEFAULT), typeof(SciMLB
+ase.FINALIZE_DEFAULT), Nothing, Tuple{}}, SciMLBa
+se.DiscreteCallback{ADORE.var"#30#31", ADORE.var"
+#print_progress#29"{SimulationConfig, Base.RefVal
+ue{Float64}, Scales}, typeof(SciMLBase.INITIALIZE
+_DEFAULT), typeof(SciMLBase.FINALIZE_DEFAULT), No
+thing, Tuple{}}}}, typeof(DiffEqBase.ODE_DEFAULT_
+ISOUTOFDOMAIN), typeof(DiffEqBase.ODE_DEFAULT_PRO
+G_MESSAGE), typeof(DiffEqBase.ODE_DEFAULT_UNSTABL
+E_CHECK), DataStructures.BinaryHeap{Float64, Data
+Structures.FasterForward}, DataStructures.BinaryH
+eap{Float64, DataStructures.FasterForward}, Nothi
+ng, Nothing, Int64, Tuple{}, Float64, Tuple{}, Or
+dinaryDiffEqCore.DEVerbosity{SciMLLogging.Minimal
+, SciMLLogging.Minimal, SciMLLogging.WarnLevel, S
+ciMLLogging.WarnLevel, SciMLLogging.WarnLevel, Sc
+iMLLogging.WarnLevel, SciMLLogging.WarnLevel, Sci
+MLLogging.WarnLevel, SciMLLogging.Silent, SciMLLo
+gging.Silent, SciMLLogging.Silent, SciMLLogging.S
+ilent, SciMLLogging.Silent, SciMLLogging.Silent, 
+SciMLLogging.WarnLevel, SciMLLogging.Silent, SciM
+LLogging.Silent, SciMLLogging.Silent, SciMLLoggin
+g.WarnLevel, SciMLLogging.Silent, SciMLLogging.Wa
+rnLevel, SciMLLogging.Silent, SciMLLogging.Silent
+, SciMLLogging.Silent, SciMLLogging.Silent, SciML
+Logging.Silent, SciMLLogging.Silent, SciMLLogging
+.Silent, SciMLLogging.Silent, SciMLLogging.Silent
+, SciMLLogging.Silent, SciMLLogging.Silent}, Noth
+ing}, Vector{Float64}, Float64, Nothing, DiffEqBa
+se.DefaultInit, Nothing, OrdinaryDiffEqCore.Dummy
+Controller, Random.TaskLocalRNG, Nothing, Nothing
+, Nothing, Nothing, Nothing, Nothing})
+    @ OrdinaryDiffEqCore C:\Users\yuxinlu_qh\.jul
+ia\packages\OrdinaryDiffEqCore\q5Gdj\src\solve.jl
+:845
+  [8] #__solve#58
+    @ C:\Users\yuxinlu_qh\.julia\packages\Ordinar
+yDiffEqCore\q5Gdj\src\solve.jl:10 [inlined]
+  [9] __solve
+    @ C:\Users\yuxinlu_qh\.julia\packages\Ordinar
+yDiffEqCore\q5Gdj\src\solve.jl:1 [inlined]
+ [10] #solve_call#22
+    @ C:\Users\yuxinlu_qh\.julia\packages\DiffEqB
+ase\4RFWW\src\solve.jl:172 [inlined]
+ [11] solve_call
+    @ C:\Users\yuxinlu_qh\.julia\packages\DiffEqB
+ase\4RFWW\src\solve.jl:137 [inlined]
+ [12] #solve_up#29
+    @ C:\Users\yuxinlu_qh\.julia\packages\DiffEqB
+ase\4RFWW\src\solve.jl:630 [inlined]
+ [13] solve_up
+    @ C:\Users\yuxinlu_qh\.julia\packages\DiffEqB
+ase\4RFWW\src\solve.jl:603 [inlined]
+ [14] #solve#28
+    @ C:\Users\yuxinlu_qh\.julia\packages\DiffEqB
+ase\4RFWW\src\solve.jl:587 [inlined]
+ [15] run_simulation(geom::BearingGeometry, mat::
+MaterialParams, lub::LubricantParams, trac::Tract
+ionParams, cage::CageGeometry, config::Simulation
+Config; verbose::Bool)
+    @ ADORE E:\antigravity_folder\ADORE_V2_jl\src
+\Dynamics\driver.jl:132
+ [16] top-level scope
+    @ E:\antigravity_folder\ADORE_V2_jl\run_dynam
+ics.jl:58
+ [17] include(mod::Module, _path::String)
+    @ Base .\Base.jl:306
+ [18] exec_options(opts::Base.JLOptions)
+    @ Base .\client.jl:317
+ [19] _start()
+    @ Base .\client.jl:550
+in expression starting at E:\antigravity_folder\A
+DORE_V2_jl\run_dynamics.jl:58
