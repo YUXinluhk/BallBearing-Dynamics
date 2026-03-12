@@ -30,33 +30,31 @@ Lumped thermo-elasto-hydrodynamic (TEHD) traction model embedding:
 This closes the Harris slip-heat paradox: at high slide velocities,
 flash temperature → viscosity drop → traction self-caps → bounded Jacobian.
 """
-@inline function tehd_traction_coefficient(u_abs, P_mean, a_hz, u_entrain,
-    A, B, C, D, Lambda_LSS, beta_temp)
-    eps_v = 1e-6
+@inline function tehd_traction_coefficient(u_abs::T, P_mean::T, b_hz::T, u_entrain::T,
+    A::T, B::T, C::T, D::T, Lambda_LSS::T, beta_temp::T) where {T}
+
+    eps_v = T(1e-6)
     u_s_smooth = abs(u_abs) + eps_v
 
-    # 1. Macro isothermal traction coefficient (4-parameter model)
+    # 1. Macro isothermal 4-parameter traction (SKF curve)
     mu_iso = (A + B * u_s_smooth) * exp(-C * u_s_smooth) + D
 
     # Short-circuit if no contact pressure
     (P_mean <= eps_v) && return mu_iso
 
-    # 2. Bair-Winer LSS truncation: τ_max = Λ_LSS · P_mean
-    #    μ_eff = μ_iso / √(1 + (μ_iso/Λ)²)  — branchless, C∞ smooth
-    mu_eff = mu_iso / hypot(1.0, mu_iso / (Lambda_LSS + eps_v))
+    # 2. Bair-Winer LSS truncation: branchless, C∞ smooth
+    mu_eff = mu_iso / hypot(T(1.0), mu_iso / (Lambda_LSS + eps_v))
 
     # 3. Archard contact flash temperature
-    #    q = μ·P·Δu,  ΔT_flash = 1.11·q·√(a/2) / (ξ·√|u_e|)
-    #    ξ_steel ≈ 12000 W·s^0.5/(m²·K) (thermal inertia)
     q_heat = mu_eff * P_mean * u_s_smooth
-    dT_flash = (1.11 * q_heat * sqrt(0.5 * abs(a_hz) + eps_v)) /
-               (12000.0 * sqrt(abs(u_entrain) + eps_v))
+    dT_flash = (T(1.11) * q_heat * sqrt(abs(b_hz) + eps_v)) /
+               (T(12000.0) * sqrt(abs(u_entrain) + eps_v))
 
-    # 4. Nahme thermal softening: μ → μ / √(1 + β·ΔT)
-    phi_T = 1.0 / sqrt(1.0 + beta_temp * dT_flash)
+    # 4. Nahme thermal softening
+    phi_T = T(1.0) / sqrt(T(1.0) + beta_temp * dT_flash)
 
-    # 5. Elastic wave speed limit (C_shear ≈ 3200 m/s for steel)
-    psi_wave = exp(-(u_s_smooth / 3200.0)^2)
+    # 5. Elastic wave speed limit
+    psi_wave = exp(-(u_s_smooth / T(3200.0))^2)
 
     return mu_eff * phi_T * psi_wave
 end

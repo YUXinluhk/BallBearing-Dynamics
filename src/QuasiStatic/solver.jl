@@ -57,7 +57,7 @@ function calc_stress(delta::AbstractVector, rho::AbstractMatrix, E_star_val::Rea
 
     h = hertz_from_curvatures_vec(sum_rho_f, F_rho_arr_f, Float64(E_star_val))
 
-    one_over_Et = 2.0 * (1.0 - 0.3^2) / 2.08e11
+    one_over_Et = 1.0 / E_star_val
     Q = h.Upsilon .* [eng_power(delta[j], 1.5) for j in 1:Z]
 
     base_args = 1.5 .* max.(Q, 0.0) ./ sum_rho .* one_over_Et
@@ -177,7 +177,7 @@ function quasi_static_residual!(F::AbstractVector, val_vec::AbstractVector,
           deg2rad(p.Theta_z) .* R_i .* sin_psi
 
     A_2 = (f_i + f_o - 1) * D * cos(p.alpha_free) .+
-          delta_rz .* cos_psi .+ delta_ry .* sin_psi .+ p.delta_r_thermal
+          delta_rz .* cos_psi .- delta_ry .* sin_psi .+ p.delta_r_thermal
 
     # ── Contact angles ──
     cos_αi, cos_αo, sin_αi, sin_αo = trig_fn(A_1, A_2, X_1, X_2,
@@ -228,7 +228,7 @@ function quasi_static_residual!(F::AbstractVector, val_vec::AbstractVector,
 
     F_ax_err = p.F_a - sum(Q_i_ax)
     F_rz_err = p.F_rz - sum(Q_i_rad .* cos_psi)
-    F_ry_err = p.F_ry - sum(Q_i_rad .* sin_psi)
+    F_ry_err = p.F_ry + sum(Q_i_rad .* sin_psi)
     M_by_err = M_y - sum((Q_i_ax .* R_i .+ λi .* f_i .* M_g) .* cos_psi)
     M_bz_err = M_z - sum((Q_i_ax .* R_i .+ λi .* f_i .* M_g) .* sin_psi)
 

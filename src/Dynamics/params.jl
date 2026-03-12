@@ -84,7 +84,24 @@ const P_L_SCALE = 70     # length scale L [m] (for contact geometry dimensionali
 const P_Q_SCALE = 71     # force scale Q [N] (for force dimensionalization)
 const P_E2_I = 72        # E(m) inner contact (precomputed elliptic integral)
 const P_E2_O = 73        # E(m) outer contact (precomputed elliptic integral)
-const N_PARAMS = 73
+
+# Thermal Parameters
+const P_MCP_I = 74
+const P_MCP_O = 75
+const P_MCP_BALL = 76
+const P_MCP_OIL = 77
+const P_G_IR_BALL = 78
+const P_G_OR_BALL = 79
+const P_G_BALL_OIL = 80
+const P_G_OR_AMB = 81
+const P_G_OIL_AMB = 82
+const P_T_AMB = 83
+const P_CTE = 84       # CTE [1/K] (dimensional)
+const P_T_REF = 85     # T_ref [K] for thermal expansion
+const P_OIL_FLOW_MDOT_CP = 86  # ṁ·cₚ [W/K] oil flow cooling coefficient (nondim)
+const P_T_OIL_INLET = 87       # T_oil_inlet [K] (dimensional)
+
+const N_PARAMS = 87
 
 """
     build_params(geom, mat, lub, trac, cage, config, scales, h_inner, h_outer) → Vector{Float64}
@@ -191,14 +208,18 @@ function build_params(geom::BearingGeometry, mat::MaterialParams,
     c_ball_spin_dim = 2ζ * sqrt(K_rot * I_ball_dim)
     c_tilt_dim = max(c_ir_dim, 2ζ * sqrt(K_hertz * m_ir_dim * (geom.d_m / 2)^2))
 
-    # Nondimensionalize: c★ = c · V / Q₀  (force-damping), or c · W / M₀ (moment-damping)
-    nondim_damp(c) = c * s.V / s.Q
-    p[P_C_BALL_TRANS] = nondim_damp(c_ball_trans_dim)
-    p[P_C_BALL_ORBIT] = nondim_damp(c_ball_orbit_dim)
-    p[P_C_BALL_SPIN] = nondim_damp(c_ball_spin_dim)
-    p[P_C_IR_DAMP] = nondim_damp(c_ir_dim)
-    p[P_C_CAGE_DAMP] = nondim_damp(c_cage_dim)
-    p[P_C_TILT] = max(nondim_damp(c_tilt_dim), 1.0)
+    # ── 严谨的阻尼无量纲化隔离 ──
+    nondim_force_damp(c) = c * s.V / s.Q      # 平动阻尼系数无量纲化
+    nondim_moment_damp(c) = c * s.W / s.M     # 转动/扭矩阻尼系数无量纲化
+
+    p[P_C_BALL_TRANS] = nondim_force_damp(c_ball_trans_dim)
+    p[P_C_BALL_ORBIT] = nondim_force_damp(c_ball_orbit_dim)
+    p[P_C_IR_DAMP] = nondim_force_damp(c_ir_dim)
+    p[P_C_CAGE_DAMP] = nondim_force_damp(c_cage_dim)
+
+    # 修复：自旋与倾角阻尼为扭矩性质，必须使用力矩尺度！
+    p[P_C_BALL_SPIN] = nondim_moment_damp(c_ball_spin_dim)
+    p[P_C_TILT] = max(nondim_moment_damp(c_tilt_dim), 1.0)
 
     # Kinematic cage speed for relative orbital damping
     ω_ir_dim = config.inner_race_speed
@@ -224,6 +245,49 @@ function build_params(geom::BearingGeometry, mat::MaterialParams,
     # Precomputed elliptic integrals E(m) for spin moment (avoids hot-loop ellipE calls)
     p[P_E2_I] = h_inner.E2
     p[P_E2_O] = h_outer.E2
+
+    # ── Thermal Network Parameters ──
+    th = config.thermal
+    # Auto-calculate thermal mass if NaN
+    C_ir = isnan(th.C_ir) ? inner_race_mass(geom) * th.c_steel : th.C_ir
+    # Estimate outer race mass as ~1.5x inner race mass
+    C_or = isnan(th.C_or) ? inner_race_mass(geom) * 1.5 * th.c_steel : th.C_or
+
+    # C_ball is the lumped heat capacity for ALL balls combined
+    C_ball = isnan(th.C_ball) ? ball_mass(geom) * Z * th.c_steel : th.C_ball
+    # Oil sump volume arbitrary estimate: 10x total ball volume inside bearing
+    C_oil = isnan(th.C_oil) ? ball_mass(geom) * Z * 10.0 * (lub.rho_lub / geom.rho_ball) * lub.c_p : th.C_oil
+
+    nondim_mcp(C) = C / (s.Q * s.L)
+    nondim_G(G) = G / (s.Q * s.L / s.T)
+
+    p[P_MCP_I] = nondim_mcp(C_ir)
+    p[P_MCP_O] = nondim_mcp(C_or)
+    p[P_MCP_BALL] = nondim_mcp(C_ball)
+    p[P_MCP_OIL] = nondim_mcp(C_oil)
+
+    p[P_G_IR_BALL] = nondim_G(th.G_ir_ball)
+    p[P_G_OR_BALL] = nondim_G(th.G_or_ball)
+    p[P_G_BALL_OIL] = nondim_G(th.G_ball_oil)
+    p[P_G_OR_AMB] = nondim_G(th.G_or_amb)
+    p[P_G_OIL_AMB] = nondim_G(th.G_oil_amb)
+    p[P_T_AMB] = th.T_ambient
+    p[P_CTE] = th.CTE           # [1/K] — dimensional, δr = CTE·ΔT·R★ gives nondim length
+    p[P_T_REF] = th.T_init      # [K] 【Bug9修复】align with ODE initial T to avoid thermal shock
+
+    # ── Oil Flow Cooling (Plan 2: circulation model) ──
+    # Convert oil_flow_rate [cm³/min] → ṁ·cₚ [W/K]
+    # ṁ = ρ_oil [kg/m³] × V̇ [m³/s] = ρ_oil × (flow_rate_cm3_per_min / 60 / 1e6)
+    T_oil_in = isnan(th.T_oil_inlet) ? th.T_init : th.T_oil_inlet
+    if th.oil_flow_rate > 0.0
+        V_dot_m3s = th.oil_flow_rate / 60.0 / 1e6  # cm³/min → m³/s
+        m_dot = lub.rho_lub * V_dot_m3s              # [kg/s]
+        mdot_cp = m_dot * lub.c_p                    # [W/K]
+    else
+        mdot_cp = 0.0
+    end
+    p[P_OIL_FLOW_MDOT_CP] = nondim_G(mdot_cp)  # nondimensionalize same as conductance
+    p[P_T_OIL_INLET] = T_oil_in                 # [K] dimensional
 
     return p
 end

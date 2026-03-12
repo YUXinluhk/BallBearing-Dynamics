@@ -146,5 +146,12 @@ function nondim_state(u_dim::AbstractVector{Float64}, scales::Scales, n_balls::I
     u★[off_cv+3] = u_dim[off_cv+3] / s.V
     u★[off_cv+4] = u_dim[off_cv+4] / s.W
 
+    # Thermal DOFs: temperatures stay in Kelvin (dimensional), pass through unchanged
+    # Heat accumulator DOFs: nondimensional energy, also pass through unchanged
+    th_start = off_cv + N_cage_v
+    for i in 1:(N_THERMAL+N_HEAT_ACCUM)
+        u★[th_start+i] = u_dim[th_start+i]
+    end
+
     return u★
 end

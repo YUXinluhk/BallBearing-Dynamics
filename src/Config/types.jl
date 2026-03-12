@@ -171,6 +171,80 @@ function bearing_7210B()
     return geom, mat
 end
 
+"7008C angular contact ball bearing (40mm bore, 15° contact angle)"
+function bearing_7008C()
+    # ISO 7008C: d_bore=40mm, d_outer=68mm, width=15mm
+    # Ball d=7.938mm, Z=16, α₀=15°, f_i=0.52, f_o=0.53
+    geom = BearingGeometry(
+        d=7.938e-3,
+        n_balls=16,
+        f_i=0.52,
+        f_o=0.53,
+        d_m=54.0e-3,   # (40+68)/2
+        alpha_0=deg2rad(15.0),
+        P_d=0.0,
+        rho_ball=7800.0,
+    )
+    mat = MaterialParams(E=2.08e11, nu=0.3)
+    return geom, mat
+end
+
+"7010C angular contact ball bearing (50mm bore, 15° contact angle)"
+function bearing_7010C()
+    # ISO 7010C: d_bore=50mm, d_outer=80mm, width=16mm
+    # Ball d=9.525mm, Z=16, α₀=15°, f_i=0.52, f_o=0.53
+    geom = BearingGeometry(
+        d=9.525e-3,
+        n_balls=16,
+        f_i=0.52,
+        f_o=0.53,
+        d_m=65.0e-3,   # (50+80)/2
+        alpha_0=deg2rad(15.0),
+        P_d=0.0,
+        rho_ball=7800.0,
+    )
+    mat = MaterialParams(E=2.08e11, nu=0.3)
+    return geom, mat
+end
+
+"7014C angular contact ball bearing (70mm bore, 15° contact angle)"
+function bearing_7014C()
+    # ISO 7014C: d_bore=70mm, d_outer=110mm, width=20mm
+    # Ball d=12.7mm, Z=18, α₀=15°, f_i=0.52, f_o=0.53
+    geom = BearingGeometry(
+        d=12.7e-3,
+        n_balls=18,
+        f_i=0.52,
+        f_o=0.53,
+        d_m=90.0e-3,   # (70+110)/2
+        alpha_0=deg2rad(15.0),
+        P_d=0.0,
+        rho_ball=7800.0,
+    )
+    mat = MaterialParams(E=2.08e11, nu=0.3)
+    return geom, mat
+end
+
+"""
+    bearing_custom(; bore, outer, d_ball, n_balls, alpha_deg, f_i=0.52, f_o=0.53)
+
+Create a custom bearing from basic catalog dimensions.
+"""
+function bearing_custom(; bore, outer, d_ball, n_balls, alpha_deg, f_i=0.52, f_o=0.53)
+    geom = BearingGeometry(
+        d=d_ball,
+        n_balls=n_balls,
+        f_i=f_i,
+        f_o=f_o,
+        d_m=(bore + outer) / 2.0,
+        alpha_0=deg2rad(alpha_deg),
+        P_d=0.0,
+        rho_ball=7800.0,
+    )
+    mat = MaterialParams(E=2.08e11, nu=0.3)
+    return geom, mat
+end
+
 # ── Lubricant ─────────────────────────────────────────────────────────
 
 """
@@ -250,9 +324,9 @@ struct TractionParams
         for _ in 1:100
             B_mid = 0.5 * (B_lo + B_hi)
             if residual(B_mid) > 0
-                B_lo = B_mid
-            else
                 B_hi = B_mid
+            else
+                B_lo = B_mid
             end
         end
         B_val = 0.5 * (B_lo + B_hi)
@@ -387,39 +461,6 @@ Base.@kwdef struct IntegratorConfig
     max_steps::Int = 100_000
 end
 
-# ── Simulation Config ─────────────────────────────────────────────────
-
-"""
-    SimulationConfig(; t_end, dt_output, inner_race_speed, ...)
-"""
-Base.@kwdef struct SimulationConfig
-    t_end::Float64 = 0.01
-    dt_output::Float64 = 1e-5
-    inner_race_speed::Float64 = 0.0     # [rad/s]
-    F_axial::Float64 = 0.0              # [N]
-    F_radial::Float64 = 0.0             # [N]
-    t_ramp_end::Float64 = 0.0           # [s]
-    mu_spin::Float64 = 0.06             # spin friction coefficient
-    c_structural::Float64 = 10.0        # structural damping [N·s/m]
-    zeta::Float64 = 0.03                # damping ratio
-    delta_r_thermal::Float64 = 0.0      # thermal radial expansion [m]
-    integrator::IntegratorConfig = IntegratorConfig()
-    churning::ChurningParams = ChurningParams()
-
-    function SimulationConfig(t_end, dt_output, inner_race_speed, F_axial, F_radial,
-        t_ramp_end, mu_spin, c_structural, zeta,
-        delta_r_thermal, integrator, churning)
-        check_positive("t_end", t_end, "SimulationConfig")
-        dt_output >= t_end && throw(ArgumentError(
-            "dt_output ($dt_output) must be < t_end ($t_end)"))
-        check_non_negative("inner_race_speed", inner_race_speed, "SimulationConfig")
-        check_range("zeta", zeta, 0.0, 1.0, "SimulationConfig")
-        new(t_end, dt_output, inner_race_speed, F_axial, F_radial,
-            t_ramp_end, mu_spin, c_structural, zeta, delta_r_thermal,
-            integrator, churning)
-    end
-end
-
 # ── Thermal Parameters ────────────────────────────────────────────────
 
 """
@@ -443,6 +484,8 @@ Base.@kwdef struct ThermalParams
     T_ref::Float64 = 293.15         # [K]
     eta_ball::Float64 = 0.5
     c_steel::Float64 = 460.0        # [J/(kg·K)]
+    oil_flow_rate::Float64 = 0.0    # [cm³/min] oil flow rate (0 = no circulation)
+    T_oil_inlet::Float64 = NaN      # [K] oil inlet temperature (NaN → use T_init)
 end
 
 "Mutable LPTN 4-node temperature state"
@@ -463,3 +506,37 @@ function lptn_from_array(arr)
 end
 
 Base.copy(s::LPTNState) = LPTNState(s.T_ir, s.T_or, s.T_ball, s.T_oil)
+
+# ── Simulation Config ─────────────────────────────────────────────────
+
+"""
+    SimulationConfig(; t_end, dt_output, inner_race_speed, ...)
+"""
+Base.@kwdef struct SimulationConfig
+    t_end::Float64 = 0.01
+    dt_output::Float64 = 1e-5
+    inner_race_speed::Float64 = 0.0     # [rad/s]
+    F_axial::Float64 = 0.0              # [N]
+    F_radial::Float64 = 0.0             # [N]
+    t_ramp_end::Float64 = 0.0           # [s]
+    mu_spin::Float64 = 0.06             # spin friction coefficient
+    c_structural::Float64 = 10.0        # structural damping [N·s/m]
+    zeta::Float64 = 0.03                # damping ratio
+    delta_r_thermal::Float64 = 0.0      # thermal radial expansion [m]
+    integrator::IntegratorConfig = IntegratorConfig()
+    churning::ChurningParams = ChurningParams()
+    thermal::ThermalParams = ThermalParams()
+
+    function SimulationConfig(t_end, dt_output, inner_race_speed, F_axial, F_radial,
+        t_ramp_end, mu_spin, c_structural, zeta,
+        delta_r_thermal, integrator, churning, thermal)
+        check_positive("t_end", t_end, "SimulationConfig")
+        dt_output >= t_end && throw(ArgumentError(
+            "dt_output ($dt_output) must be < t_end ($t_end)"))
+        check_non_negative("inner_race_speed", inner_race_speed, "SimulationConfig")
+        check_range("zeta", zeta, 0.0, 1.0, "SimulationConfig")
+        new(t_end, dt_output, inner_race_speed, F_axial, F_radial,
+            t_ramp_end, mu_spin, c_structural, zeta, delta_r_thermal,
+            integrator, churning, thermal)
+    end
+end

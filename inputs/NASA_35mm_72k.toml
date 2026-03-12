@@ -1,0 +1,70 @@
+# =====================================================================
+# ADORE V2 Configuration
+# Case: NASA TP-2275 35-mm Bore Angular Contact Ball Bearing
+# Reference: Parker, R.J. (1984), NASA Technical Paper 2275
+# Operating: 72,000 RPM, Thrust Load 667 N, Oil-in 394 K
+# =====================================================================
+
+[geometry]
+d = 0.00714          # Ball diameter [m]: 7.14 mm
+n_balls = 16
+f_i = 0.535          # Inner groove conformity (typical for ACBB)
+f_o = 0.535          # Outer groove conformity (typical for ACBB)
+d_m = 0.0465         # Pitch diameter [m]: 46.5 mm
+alpha_0 = 0.4189         # Contact angle [rad]: 24 degrees
+P_d = 0.0            # Diametral clearance [m]
+rho_ball = 7800.0    # Ball density [kg/m3]
+
+[material]
+E = 2.08e11          # Young's modulus [Pa]
+nu = 0.3             # Poisson's ratio
+
+[lubricant]
+type = "mil_l_23699"
+
+[traction]
+kappa_0 = 0.010
+kappa_inf = 0.005
+kappa_m = 0.10
+u_m = 0.5
+
+[cage]
+auto_generate = true
+pocket_clearance_ratio = 0.01
+pilot_clearance_ratio = 0.002
+
+[operating_conditions]
+inner_race_speed_RPM = 72000.0
+F_axial = 667.0
+F_radial = 0.0
+t_ramp_end = 0.005
+t_end = 0.15
+dt_output = 0.002
+zeta = 0.10
+c_structural = 0.0
+mu_spin = 0.06
+
+[integrator]
+rtol = 1e-4
+atol = 1e-7
+h_max = 5e-5
+max_steps = 20000000
+
+[churning]
+rho_oil = 860.0
+rho_air = 0.6
+mu_oil = 0.005
+fill_fraction = 0.002
+cage_web = 3e-4
+
+[thermal]
+T_ambient = 300.0
+T_init = 394.0
+T_ref = 300.0
+oil_flow_rate = 760.0
+T_oil_inlet = 394.0
+G_ir_ball = 50.0
+G_or_ball = 50.0
+G_ball_oil = 50.0
+G_or_amb = 5.0
+G_oil_amb = 5.0

@@ -176,7 +176,7 @@ end
 
 C∞-smooth transition: δ_sm = ½(δ + √(δ² + ε²)) ≈ max(0, δ).
 """
-@inline function smooth_hertz_delta(δ; ε=1e-12)
+@inline function smooth_hertz_delta(δ; ε=1e-5)  # 【Bug7修复】ε^2=1e-10 survives Float64 at δ~1e-4
     return 0.5 * (δ + sqrt(δ^2 + ε^2))
 end
 

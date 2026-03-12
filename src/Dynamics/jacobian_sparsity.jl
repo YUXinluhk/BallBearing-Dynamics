@@ -97,6 +97,28 @@ function build_jacobian_sparsity(Z::Int)
     mark_block!(cage_v, cage_p)
     mark_block!(cage_v, cage_v)
 
+    # ── 3. Thermal Coupling ──
+    th = thermal_offset(Z):thermal_offset(Z)+N_THERMAL-1
+    # Temperatures depend on all mechanical states (heat generation) and temperatures (conduction)
+    mark_block!(th, 1:N)
+
+    # Heat accumulators depend on all mechanical states (heat source terms)
+    ha = heat_accum_offset(Z):heat_accum_offset(Z)+N_HEAT_ACCUM-1
+    mark_block!(ha, 1:N)
+
+    # Velocity derivatives depend on temperatures (temperature-dependent viscosity)
+    mark_block!(ir_v, th)
+    mark_block!(cage_v, th)
+    for j in 1:Z
+        mark_block!(ball_v[j], th)
+    end
+
+    # Cage pilot coupling with Inner Race
+    mark_block!(ir_v, cage_p)
+    mark_block!(ir_v, cage_v)
+    mark_block!(cage_v, ir_p)
+    mark_block!(cage_v, ir_v)
+
     # Build sparse matrix
     vals = ones(Float64, length(rows))
     S = sparse(rows, cols, vals, N, N)

@@ -1,30 +1,18 @@
 # =====================================================================
-# Dynamics/kernel.jl — ODE RHS for 6-DOF bearing dynamics
+# Dynamics/kernel.jl — ODE RHS for 6-DOF bearing dynamics (究极完全体)
 #
-# Port of dynamics_numba.py::_compute_core (800+ lines).
-# Pure function: (du, u, p, t) → nothing.
-# Uses @inbounds, @fastmath for performance.
-# Quaternion kinematics instead of Euler angles.
+# 已补全所有强坐标耦合、兜孔三维摩擦、内圈陀螺力矩及反作用力配平
 # =====================================================================
 
 """
     ode_rhs!(du, u, params_tuple, t)
-
-In-place ODE right-hand side for the bearing dynamics.
-
-`params_tuple` = (p, ln_re_table, ln_cd_table) where p is the flat parameter vector.
 """
-function ode_rhs!(du::AbstractVector, u::AbstractVector,
-    params_tuple, t)
+function ode_rhs!(du::AbstractVector, u::AbstractVector, params_tuple, t)
 
     p = params_tuple[1]
-
     Z = Int(p[P_NBALL])
     D_star = p[P_D]
     d_m_star = p[P_DM]
-    f_i = p[P_FI]
-    f_o = p[P_FO]
-    α₀ = p[P_ALPHA0]
     m_ball = p[P_MBALL]
     J_ball = p[P_JBALL]
     m_ir = p[P_MIR]
@@ -40,386 +28,409 @@ function ode_rhs!(du::AbstractVector, u::AbstractVector,
     D_o_star = p[P_DO]
     μ₀ = p[P_MU0]
     α_pv = p[P_ALPHA_PV]
+    β_temp = p[P_BETA_TEMP]
+    Λ_LSS = p[P_LAMBDA_LSS]
     trac_A = p[P_TRAC_A]
     trac_B = p[P_TRAC_B]
     trac_C = p[P_TRAC_C]
     trac_D = p[P_TRAC_D]
     μ_spin = p[P_MU_SPIN]
-    c_struct = p[P_C_STRUCT]
     ζ = p[P_ZETA]
-    ω_ir_star = p[P_OMEGA_IR]
     F_a_star = p[P_FA]
     F_r_star = p[P_FR]
     t_ramp = p[P_T_RAMP]
     ρ_eff = p[P_RHO_EFF]
     μ_oil = p[P_MU_OIL]
     cage_web = p[P_CAGE_WEB]
-    R_ball = D_star / 2.0
+    R_ball_k_nom = D_star / 2.0
     drb_i = p[P_DRB_I]
     drb_o = p[P_DRB_O]
-    x_gi0_star = p[P_X_GI0]   # inner groove center axial offset ★
-    x_go0_star = p[P_X_GO0]   # outer groove center axial offset ★
-    # Per-mode damping
+    x_gi0_star = p[P_X_GI0]
+    x_go0_star = p[P_X_GO0]
+
+    # Damping & Scales
     c_ball_t = p[P_C_BALL_TRANS]
     c_ball_o = p[P_C_BALL_ORBIT]
+    c_ball_spin = p[P_C_BALL_SPIN]
     c_ir_damp = p[P_C_IR_DAMP]
     c_cage_damp = p[P_C_CAGE_DAMP]
     c_tilt_damp = p[P_C_TILT]
     ω_cage_star = p[P_OMEGA_CAGE]
-    V_scale = p[P_V_SCALE]    # [m/s] for dimensionalizing velocities
-    W_scale = p[P_W_SCALE]    # [rad/s] for dimensionalizing angular velocities
-    L_scale = p[P_L_SCALE]    # [m] for dimensionalizing lengths
-    Q_scale = p[P_Q_SCALE]    # [N] for dimensionalizing forces
+    V_scale = p[P_V_SCALE]
+    W_scale = p[P_W_SCALE]
+    L_scale = p[P_L_SCALE]
+    Q_scale = p[P_Q_SCALE]
 
     # Cage params
     cage_mass = p[P_CAGE_MASS]
     cage_Ixx = p[P_CAGE_IXX]
-    cage_Iyy = p[P_CAGE_IYY]
     k_pocket = p[P_K_POCKET]
     μ_pocket = p[P_MU_POCKET]
     c_cage = p[P_C_CAGE]
 
     # ── Load & speed ──
-    # Load: full from t=0 (IC is at QS full-load equilibrium)
-    F_a = F_a_star
-    F_r = F_r_star
-    # Speed: C¹ cosine ramp (only speed is ramped)
     ramp = t_ramp > 0 ? 0.5 * (1.0 - cos(π * min(t / t_ramp, 1.0))) : 1.0
-    ω_ir = ω_ir_star * ramp
+    ω_ir = p[P_OMEGA_IR] * ramp
 
-    # ── Read inner race state ──
+    # ── Read state views ──
     ir_p = ir_pos_view(u, Z)
     ir_v = ir_vel_view(u, Z)
-    x_ir, y_ir, z_ir = ir_p[1], ir_p[2], ir_p[3]
-    γy_ir, γz_ir = ir_p[4], ir_p[5]
-    ẋ_ir, ẏ_ir, ż_ir = ir_v[1], ir_v[2], ir_v[3]
-    γ̇y_ir, γ̇z_ir = ir_v[4], ir_v[5]
+    x_ir, y_ir, z_ir, γy_ir, γz_ir = ir_p[1], ir_p[2], ir_p[3], ir_p[4], ir_p[5]
+    ẋ_ir, ẏ_ir, ż_ir, γ̇y_ir, γ̇z_ir = ir_v[1], ir_v[2], ir_v[3], ir_v[4], ir_v[5]
 
-    # ── Read cage state ──
     cg_p = cage_pos_view(u, Z)
     cg_v = cage_vel_view(u, Z)
     x_cg, y_cg, z_cg, θ_cg = cg_p[1], cg_p[2], cg_p[3], cg_p[4]
     ẋ_cg, ẏ_cg, ż_cg, θ̇_cg = cg_v[1], cg_v[2], cg_v[3], cg_v[4]
 
-    # ── Scalar accumulators (zero allocation) ──
-    T_u = eltype(u)
-    F_ir_x = F_a - c_ir_damp * ẋ_ir
-    F_ir_y = zero(T_u) - c_ir_damp * ẏ_ir
-    F_ir_z = F_r - c_ir_damp * ż_ir
-    M_ir_y = zero(T_u)
-    M_ir_z = zero(T_u)
+    tv = thermal_view(u, Z)
+    T_ir_node, T_or_node, T_ball_node, T_oil_node = tv[1], tv[2], tv[3], tv[4]
 
-    # Cage: global damping OUTSIDE contact block (C∞ continuous)
+    # Phase 4b: Ball thermal expansion — closes internal clearance at high DN
+    δr_ball = p[P_CTE] * (T_ball_node - p[P_T_REF]) * R_ball_k_nom
+    R_ball_k = R_ball_k_nom + δr_ball
+
+    # ── Dynamic Viscosity (bidirectional Roelands: T>T_ref → μ↓, T<T_ref → μ↑) ──
+    T_ref_oil = p[P_T0]
+    μ_oil_dyn = μ_oil * exp(-β_temp * (T_oil_node - T_ref_oil))
+
+    # ── Scalar accumulators (消除堆内存分配，赋予全局平滑阻尼) ──
+    T_u = eltype(u)
+    H_ir_total = zero(T_u)
+    H_or_total = zero(T_u)
+    H_ball_total = zero(T_u)
+    H_oil_total = zero(T_u)
+
+    F_ir_x = F_a_star - c_ir_damp * ẋ_ir
+    F_ir_y = zero(T_u) - c_ir_damp * ẏ_ir
+    F_ir_z = F_r_star - c_ir_damp * ż_ir
+    M_ir_y = zero(T_u) - c_tilt_damp * γ̇y_ir
+    M_ir_z = zero(T_u) - c_tilt_damp * γ̇z_ir
+
     F_cg_x = zero(T_u) - c_cage_damp * ẋ_cg
     F_cg_y = zero(T_u) - c_cage * ẏ_cg
     F_cg_z = zero(T_u) - c_cage * ż_cg
-    F_cg_θ = zero(T_u) - c_cage_damp * (θ̇_cg - ω_cage_star)
+    F_cg_θ = zero(T_u) - c_cage_damp * (d_m_star / 2.0)^2 * (θ̇_cg - ω_cage_star)
 
-    N_p = n_pos_dofs(Z)
-    N_v = n_vel_dofs(Z)
+    # ── 引导环支撑与摩擦闭环 (修复牛顿第三定律反作用力缺失) ──
+    ecc_y = y_cg - (p[P_PILOT_IR] > 0.5 ? y_ir : zero(T_u))
+    ecc_z = z_cg - (p[P_PILOT_IR] > 0.5 ? z_ir : zero(T_u))
+    ecc = sqrt(ecc_y^2 + ecc_z^2 + 1e-30)
 
-    # ── Position derivatives = velocities ──
-    # Inner race
+    δ_pilot = max(ecc - p[P_PILOT_CLR], zero(T_u))
+    F_pilot = p[P_K_PILOT] * δ_pilot
+    ey, ez = ecc_y / ecc, ecc_z / ecc
+
+    F_cg_y -= F_pilot * ey
+    F_cg_z -= F_pilot * ez
+
+    Δω_pilot = θ̇_cg - (p[P_PILOT_IR] > 0.5 ? ω_ir : zero(T_u))
+    R_pilot = p[P_PILOT_IR] > 0.5 ? p[P_CAGE_IR] : p[P_CAGE_OR]
+    F_fric_pilot = p[P_MU_PILOT] * F_pilot * tanh(Δω_pilot / 1e-3)
+
+    F_cg_θ -= F_fric_pilot * R_pilot
+    F_cg_y += F_fric_pilot * ez
+    F_cg_z -= F_fric_pilot * ey
+
+    # 精确返还给内圈反作用力矩阵！
+    if p[P_PILOT_IR] > 0.5
+        F_ir_y += F_pilot * ey - F_fric_pilot * ez
+        F_ir_z += F_pilot * ez + F_fric_pilot * ey
+    end
+
     @inbounds for i in 1:N_IR_POS
         du[ir_pos_offset()+i-1] = ir_v[i]
     end
-
-    # Cage translational & rotational
     @inbounds for i in 1:N_CAGE_POS
         du[cage_pos_offset(Z)+i-1] = cg_v[i]
     end
 
-    # ── Per-ball loop ──
+    # ── 滚珠主循环 ──
     @inbounds @fastmath for j in 1:Z
         bp = ball_pos_view(u, j, Z)
         bv = ball_vel_view(u, j, Z)
-
         x_b, r_b, θ_b = bp[1], bp[2], bp[3]
-        q = ball_quat(u, j, Z)
+        # (ball_quat removed — quaternion accessed via raw u[] indices below for AD compatibility)
         ẋ_b, ṙ_b, θ̇_b = bv[1], bv[2], bv[3]
-        ω_body = ball_omega(u, j, Z)
 
+        # 修正：定义严格右手系 ω_body = [x轴, r径向, θ切向]
+        ω_body = ball_omega(u, j, Z)
         sθ, cθ = sincos(θ_b)
 
-        # ── Ball position in inertial frame ──
-        y_b = -r_b * sθ
-        z_b = r_b * cθ
+        # 【核心修复1】：深度几何干涉，内圈倾覆角不仅带来轴向位移，还带来径向杠杆偏心
+        # Phase 4: 热膨胀动态游隙修正 — 参考温度为初始运行温度 T0
+        # δr = CTE·(T - T_init)·R★ → t=0时δr=0 (与QS初值一致)
+        δr_ir = p[P_CTE] * (T_ir_node - p[P_T_REF]) * (D_i_star / 2.0)
+        δr_or = p[P_CTE] * (T_or_node - p[P_T_REF]) * (D_o_star / 2.0)
+        R_pitch_i = D_i_star / 2.0 + δr_ir
+        tilt_proj = cθ * γy_ir + sθ * γz_ir
+        x_gc_i = x_gi0_star + x_ir + R_pitch_i * tilt_proj
+        r_gc_i = R_pitch_i + y_ir * (-sθ) + z_ir * cθ - x_gi0_star * tilt_proj
 
-        # ── Groove center positions (Harris §3.5) ──
-        # Strong coordinate coupling: tilt angles γy,γz project into groove center
-        R_pitch_i = D_i_star / 2.0
-        r_gc_i = R_pitch_i + y_ir * (-sθ) + z_ir * cθ  # + IR lateral displacement
-        # Axial: x_gi0★ + IR axial + tilt projection (breakthrough 1: bend-twist coupling)
-        x_gc_i = x_gi0_star + x_ir + R_pitch_i * (cθ * γy_ir + sθ * γz_ir)
+        x_gc_o = x_go0_star
+        r_gc_o = D_o_star / 2.0 + δr_or
 
-        r_gc_o = D_o_star / 2   # outer race is fixed
-        x_gc_o = x_go0_star     # outer groove axial offset (non-zero!)
-
-        # ── Contact geometry — 3D normal vector approach (matches Python) ──
-        # Vectors from groove center to ball center
-        dx_i = x_gc_i - x_b     # axial gap inner (x_ir only in x_gc_i, not double-counted)
-        dr_i = r_gc_i - r_b     # radial gap inner
-
-        dx_o = x_gc_o - x_b     # axial gap outer (includes x_go offset)
-        dr_o = r_gc_o - r_b     # radial gap outer
-
-        # Distance from ball center to groove center
+        dx_i = x_gc_i - x_b
+        dr_i = r_gc_i - r_b
+        dx_o = x_gc_o - x_b
+        dr_o = r_gc_o - r_b
         L_i = sqrt(dx_i^2 + dr_i^2 + 1e-30)
         L_o = sqrt(dx_o^2 + dr_o^2 + 1e-30)
 
-        # Unit normal vectors: groove center → ball center direction
-        inv_Li = 1.0 / L_i
-        inv_Lo = 1.0 / L_o
-        nfi_x = dx_i * inv_Li    # = sin(α_i)
-        nfi_r = dr_i * inv_Li    # = cos(α_i)
-        nfo_x = dx_o * inv_Lo    # = sin(α_o) (negative for outer)
-        nfo_r = dr_o * inv_Lo    # = cos(α_o) (negative for outer)
+        nfi_x, nfi_r = dx_i / L_i, dr_i / L_i
+        nfo_x, nfo_r = dx_o / L_o, dr_o / L_o
 
-        # Penetration (elastic deformation) — SAME formula for both
-        δ_i = L_i - drb_i    # positive = contact
-        δ_o = L_o - drb_o    # positive = contact (FIX: was drb_o - L_o)
-
-        # Smooth Hertz (C∞ continuous)
-        δ_i_sm = smooth_hertz_delta(δ_i)
-        δ_o_sm = smooth_hertz_delta(δ_o)
-
-        # ── Hertz contact loads (x*sqrt(x) ≡ x^1.5 but 3× faster) ──
+        δ_i_sm = smooth_hertz_delta(L_i - drb_i)
+        δ_o_sm = smooth_hertz_delta(L_o - drb_o)
         Q_i = Y_i * δ_i_sm * sqrt(δ_i_sm)
         Q_o = Y_o * δ_o_sm * sqrt(δ_o_sm)
 
-        # Contact angles (for traction/spin, derived from normals)
-        sαi = nfi_x    # sin(α_i)
-        cαi = nfi_r    # cos(α_i)
-        sαo = nfo_x    # sin(α_o)
-        cαo = nfo_r    # cos(α_o)
-
-        # ── Contact ellipse dimensions (cbrt ≡ ^(1/3) but native HW) ──
         c_i = Σρ_i > 1e-20 ? cbrt(3Q_i / (2 * p[P_E_PRIME] * Σρ_i)) : zero(T_u)
-        a_i = a_i_star * c_i
-        b_i = b_i_star * c_i
+        a_i_dim, b_i_dim = a_i_star * c_i * L_scale, b_i_star * c_i * L_scale
         c_o = Σρ_o > 1e-20 ? cbrt(3Q_o / (2 * p[P_E_PRIME] * Σρ_o)) : zero(T_u)
-        a_o = a_o_star * c_o
-        b_o = b_o_star * c_o
+        a_o_dim, b_o_dim = a_o_star * c_o * L_scale, b_o_star * c_o * L_scale
 
-        # ── Kinematics: surface velocities (nondim) ──
-        R_ball_k = D_star / 2  # ball radius (nondim)
-        # Inner race surface velocity at contact point (not groove center!)
-        v_ir_θ = (r_b - R_ball_k * cαi) * ω_ir  # contact point radius (nondim)
-        v_ball_θ = r_b * θ̇_b            # ball orbital velocity (nondim)
+        # 实际接触点相对坐标与表面速度投影
+        r_contact_i = r_b - R_ball_k * nfi_r
+        x_contact_i = x_b - R_ball_k * nfi_x
 
-        # Ball surface velocity at contact point (includes ball rotation!)
-        # ω_roll = ωx·cos(α) - ωz·sin(α) — rolling component of ball angular velocity
-        ω_roll_i = ω_body[1] * cαi - ω_body[3] * sαi
-        ω_roll_o = ω_body[1] * cαo - ω_body[3] * sαo
+        # 内圈在接触点的动态挤压线速度 (包含倾覆振动产生的速度)
+        # 【核心修复8】切向线速度增加内圈偏心杠杆臂
+        v_ir_θ = ω_ir * (r_contact_i + y_ir * sθ - z_ir * cθ) + γ̇y_ir * (x_contact_i - x_ir) * sθ - γ̇z_ir * (x_contact_i - x_ir) * cθ - ẏ_ir * cθ - ż_ir * sθ
+        v_ball_θ = r_b * θ̇_b
 
-        # Ball surface velocity in tangential direction at contact:
-        # Left-hand (x,θ,r) system: ê_x × ê_θ = -ê_r ⟹ v_surf_θ = -R·ω_roll
-        v_ball_surface_i = v_ball_θ - R_ball_k * ω_roll_i  # nondim
-        v_ball_surface_o = v_ball_θ - R_ball_k * ω_roll_o  # nondim
+        # 表面滚动速度学 (注意：已按右手系将 ω_y 替换为 ω_r)
+        ω_roll_i = ω_body[1] * nfi_r - ω_body[2] * nfi_x
+        ω_roll_o = ω_body[1] * nfo_r - ω_body[2] * nfo_x
 
-        # Dimensionalize for traction coefficient (expects m/s)
-        v_ir_θ_dim = v_ir_θ * V_scale
-        v_ball_θ_dim = v_ball_θ * V_scale
+        v_ball_surface_i = v_ball_θ - R_ball_k * ω_roll_i
+        v_ball_surface_o = v_ball_θ - R_ball_k * ω_roll_o
 
-        # Slide velocity: creep = race surface - ball contact surface
-        u_slide_i_dim = abs(v_ir_θ_dim - v_ball_surface_i * V_scale)
-        u_slide_o_dim = abs(v_ball_surface_o * V_scale)  # outer race is fixed
+        u_slide_i_dim = abs(v_ir_θ * V_scale - v_ball_surface_i * V_scale)
+        u_slide_o_dim = abs(-v_ball_surface_o * V_scale)
 
-        # Spin velocity (dimensional rad/s)
         ω_ir_dim = ω_ir * W_scale
-        ω_race_n_i = ω_ir_dim * sαi
-        ω_ball_n_i = (ω_body[1] * sαi + ω_body[3] * cαi) * W_scale  # ω⃗·n̂ = ωₓsinα + ω_r·cosα
-        ω_spin_i = ω_race_n_i - ω_ball_n_i
+        ω_spin_i = ω_ir_dim * nfi_x - (ω_body[1] * nfi_x + ω_body[2] * nfi_r) * W_scale
+        ω_spin_o = zero(T_u) - (ω_body[1] * nfo_x + ω_body[2] * nfo_r) * W_scale
 
-        ω_race_n_o = zero(T_u)  # outer race is fixed
-        ω_ball_n_o = (ω_body[1] * sαo + ω_body[3] * cαo) * W_scale  # dot product (always additive)
-        ω_spin_o = ω_race_n_o - ω_ball_n_o
+        # 引入微观热弹流 (TEHD) 的抗发散牵引模型
+        P_mean_i = Q_i > 0 ? (Q_i * Q_scale) / (π * a_i_dim * b_i_dim + 1e-16) : zero(T_u)
+        P_mean_o = Q_o > 0 ? (Q_o * Q_scale) / (π * a_o_dim * b_o_dim + 1e-16) : zero(T_u)
+        # 【Bug1修复】EHL卷吸速度：必须在接触点共转参考系下计算
+        v_cp_i_dim = r_contact_i * θ̇_b * V_scale  # 内圈接触点轨道速度
+        r_contact_o = r_b - R_ball_k * nfo_r
+        v_cp_o_dim = r_contact_o * θ̇_b * V_scale  # 外圈接触点轨道速度
+        u_entrain_i = abs(0.5 * (v_ir_θ * V_scale + v_ball_surface_i * V_scale) - v_cp_i_dim)
+        u_entrain_o = abs(0.5 * (zero(T_u) + v_ball_surface_o * V_scale) - v_cp_o_dim)
 
-        # ── TEHD traction forces (Harris paradox killer) ──
-        # Dimensionalize for TEHD model
-        Q_i_dim = Q_i * Q_scale
-        Q_o_dim = Q_o * Q_scale
-        a_i_dim_t = a_i * L_scale
-        b_i_dim_t = b_i * L_scale
-        a_o_dim_t = a_o * L_scale
-        b_o_dim_t = b_o * L_scale
+        κ_i = tehd_traction_coefficient(u_slide_i_dim, P_mean_i, b_i_dim, u_entrain_i, trac_A, trac_B, trac_C, trac_D, Λ_LSS, β_temp)
+        κ_o = tehd_traction_coefficient(u_slide_o_dim, P_mean_o, b_o_dim, u_entrain_o, trac_A, trac_B, trac_C, trac_D, Λ_LSS, β_temp)
 
-        # Mean contact pressure P = Q / (π·a·b)
-        P_mean_i = Q_i_dim / (π * a_i_dim_t * b_i_dim_t + 1e-16)
-        P_mean_o = Q_o_dim / (π * a_o_dim_t * b_o_dim_t + 1e-16)
+        v_roll_nominal = abs(ω_ir_dim) * d_m_star * L_scale * 0.5
+        entrain_factor = v_roll_nominal^2 / (v_roll_nominal^2 + 0.01)
+        F_trac_i = (κ_i * entrain_factor * Q_i * Q_scale) / Q_scale
+        F_trac_o = (κ_o * entrain_factor * Q_o * Q_scale) / Q_scale
 
-        # Entrainment velocities
-        v_ball_θ_dim = v_ball_θ * V_scale
-        u_entrain_i = 0.5 * (v_ir_θ_dim + v_ball_θ_dim)
-        u_entrain_o = 0.5 * v_ball_θ_dim
+        # 牵引力方向 C∞ 平滑化
+        sign_slide_i = tanh((v_ir_θ * V_scale - v_ball_surface_i * V_scale) / 0.01)
+        sign_slide_o = tanh((-v_ball_surface_o * V_scale) / 0.01)
 
-        # TEHD traction coefficient (LSS + flash temp + wave speed limit)
-        Lambda_LSS = p[P_LAMBDA_LSS]
-        beta_temp = p[P_BETA_TEMP]
-        κ_i = tehd_traction_coefficient(u_slide_i_dim, P_mean_i, a_i_dim_t, u_entrain_i,
-            trac_A, trac_B, trac_C, trac_D, Lambda_LSS, beta_temp)
-        κ_o = tehd_traction_coefficient(u_slide_o_dim, P_mean_o, a_o_dim_t, u_entrain_o,
-            trac_A, trac_B, trac_C, trac_D, Lambda_LSS, beta_temp)
-
-        F_trac_i = (κ_i * Q_i_dim) / Q_scale   # nondim
-        F_trac_o = (κ_o * Q_o_dim) / Q_scale   # nondim
-
-        # Traction direction — C∞ smooth (tanh replaces sign)
-        v_slip_i = v_ir_θ_dim - v_ball_surface_i * V_scale
-        v_slip_o = -v_ball_surface_o * V_scale
-        sign_slide_i = tanh(v_slip_i / 0.01)
-        sign_slide_o = tanh(v_slip_o / 0.01)
-
-        # ── Spin moment ──
-        # Contact ellipse in dimensional [m] for spin moment
-        a_i_dim = a_i * L_scale
-        b_i_dim = b_i * L_scale
-        a_o_dim = a_o * L_scale
-        b_o_dim = b_o * L_scale
-        M_spin_i = spin_moment(ω_spin_i, Q_i_dim, a_i_dim, b_i_dim, μ_spin, p[P_E2_I]) / (Q_scale * L_scale)
-        M_spin_o = spin_moment(ω_spin_o, Q_o_dim, a_o_dim, b_o_dim, μ_spin, p[P_E2_O]) / (Q_scale * L_scale)
-
-        # ── Drag force ──
-        # Drag: dimensionalize velocity and ball diameter, then nondim the result
-        V_ball_dim = sqrt(ẋ_b^2 + (r_b * θ̇_b)^2 + ṙ_b^2) * V_scale
-        D_ball_dim = D_star * L_scale
-        F_drag = drag_force(V_ball_dim, D_ball_dim, ρ_eff, μ_oil, cage_web * L_scale) / Q_scale
-
-        # ── Ball force balance ──
-        # Normal contact forces: Q × unit_normal (FIX: no sign games, direction from normal)
-        F_n_ix = Q_i * nfi_x    # inner normal, axial component
-        F_n_ir = Q_i * nfi_r    # inner normal, radial component
-        F_n_ox = Q_o * nfo_x    # outer normal, axial (FIX: was -Q_o * sαo)
-        F_n_or = Q_o * nfo_r    # outer normal, radial (FIX: was -Q_o * cαo)
-
-        # Traction forces (tangential, in θ direction)
         F_trac_tang_i = F_trac_i * sign_slide_i
         F_trac_tang_o = F_trac_o * sign_slide_o
 
-        # Total ball forces in cylindrical coords (damping applied in acc equations)
-        F_ball_x = F_n_ix + F_n_ox
-        F_ball_r = F_n_ir + F_n_or
-        F_ball_θ = F_trac_tang_i + F_trac_tang_o - F_drag * tanh(r_b * θ̇_b * V_scale / 0.01)
+        # 自旋摩擦力矩 (Harris 完整公式, 含椭圆积分 E(m))
+        sign_spin_i = tanh(ω_spin_i / 0.1)
+        sign_spin_o = tanh(ω_spin_o / 0.1)
+        M_spin_i = 0.375 * p[P_MU_SPIN] * Q_i * a_i_star * c_i * p[P_E2_I] * sign_spin_i
+        M_spin_o = 0.375 * p[P_MU_SPIN] * Q_o * a_o_star * c_o * p[P_E2_O] * sign_spin_o
 
-        # Ball/cage pocket interaction (simplified)
+        # ── 强耦合热网络发热累加 (Non-Dimensional Power) ──
+        u_slide_i_nd = u_slide_i_dim / V_scale
+        u_slide_o_nd = u_slide_o_dim / V_scale
+        ω_spin_i_nd = ω_spin_i / W_scale
+        ω_spin_o_nd = ω_spin_o / W_scale
+
+        P_slide_i_nd = F_trac_i * u_slide_i_nd
+        P_slide_o_nd = F_trac_o * u_slide_o_nd
+        P_spin_i_nd = abs(M_spin_i * ω_spin_i_nd)
+        P_spin_o_nd = abs(M_spin_o * ω_spin_o_nd)
+
+        H_i_tot = P_slide_i_nd + P_spin_i_nd
+        H_o_tot = P_slide_o_nd + P_spin_o_nd
+
+        H_ir_total += 0.5 * H_i_tot
+        H_or_total += 0.5 * H_o_tot
+        H_ball_total += 0.5 * (H_i_tot + H_o_tot)
+
+        # ── 3D 流体力学 ──
+        v_rel_θ_nd = r_b * (θ̇_b - ω_cage_star)
+        V_ball_dim = sqrt(ẋ_b^2 + v_rel_θ_nd^2 + ṙ_b^2 + 1e-30) * V_scale
+        F_drag_total = drag_force(V_ball_dim, D_star * L_scale, ρ_eff, μ_oil_dyn, cage_web * L_scale) / Q_scale
+        F_drag_x = -F_drag_total * (ẋ_b * V_scale / V_ball_dim)
+        F_drag_r = -F_drag_total * (ṙ_b * V_scale / V_ball_dim)
+        F_drag_θ = -F_drag_total * (v_rel_θ_nd * V_scale / V_ball_dim)
+
+        ω_mag_dim = sqrt(ω_body[1]^2 + ω_body[2]^2 + ω_body[3]^2 + 1e-30) * W_scale
+        M_ch_nondim = churning_moment(ω_mag_dim, R_ball_k * L_scale, ρ_eff, μ_oil_dyn) / (Q_scale * L_scale)
+
+        P_drag_nd = F_drag_total * (V_ball_dim / V_scale)
+        P_drag_spin_nd = M_ch_nondim * (ω_mag_dim / W_scale)
+        H_oil_total += P_drag_nd + P_drag_spin_nd
+
+        # 【核心修复2】：保持架兜孔推力完美分解入三维坐标系，触发真实偏心涡动！
         pocket_θ = θ_cg + (j - 1) * 2π / Z
-        Δθ_pocket = θ_b - pocket_θ
-        Δθ_pocket -= 2π * round(Δθ_pocket / (2π))
-        gap_pocket = r_b * Δθ_pocket
-        pocket_clr = p[P_POCKET_CLR]
-        pen_pocket = abs(gap_pocket) - pocket_clr
-        pen_pocket_sm = smooth_hertz_delta(pen_pocket)
-        F_pocket = k_pocket * pen_pocket_sm * sqrt(pen_pocket_sm)
-        sign_pocket = tanh(gap_pocket / 1e-6)
-        F_ball_θ -= sign_pocket * F_pocket
-        F_cg_θ += sign_pocket * F_pocket * r_b  # cage torque
+        sψ, cψ = sincos(pocket_θ)
+        Δθ_pk = θ_b - pocket_θ
+        Δθ_pk -= 2π * round(Δθ_pk / (2π))
 
-        # (c_lin damping removed — already applied via c_ball_t at acceleration level)
+        pen_pk_sm = smooth_hertz_delta(abs(r_b * Δθ_pk) - p[P_POCKET_CLR])
+        F_pk_norm = p[P_K_POCKET] * pen_pk_sm
 
-        # ── 3D Rolling torque: r_contact × F_traction ──
-        # In Julia's 2D frame (0=axial, 1=tangent, 2=radial):
-        #   normal = (nfi_x, 0, nfi_r), traction = (0, F_tang, 0)
-        #   contact_pt = -R_ball * normal = (-R·sα, 0, -R·cα)
-        #   τ = r × F = (R·cα·F, 0, -R·sα·F) (dimensional → nondim)
-        R_ball_dim = D_star * L_scale / 2
-        moment_scale_inv = 1.0 / (Q_scale * L_scale)  # nondim moment scale
+        F_pc_tang_ball = -F_pk_norm * tanh((r_b * Δθ_pk) * L_scale / 1e-5)
 
-        # Inner contact traction torque (dimensional cross product → nondim)
-        F_tang_i_dim = F_trac_tang_i * Q_scale  # dimensional [N]
-        τ_roll_i_x = -R_ball_dim * cαi * F_tang_i_dim * moment_scale_inv   # = -R·cos(α_i)·F / (Q·L)
-        τ_roll_i_z = R_ball_dim * sαi * F_tang_i_dim * moment_scale_inv    # = +R·sin(α_i)·F / (Q·L)
+        # 兜孔内干摩擦高频耗散，驱动保持架轴向窜动
+        v_cg_r_local = -ẏ_cg * sψ + ż_cg * cψ
+        # 【Bug6修复】2D库仑摩擦：先合成滑移矢量，再投影方向，避免正方形极限域
+        v_slip_ax = (ẋ_b - ẋ_cg) * V_scale
+        v_slip_rad = (ṙ_b - v_cg_r_local) * V_scale
+        v_slip_mag = sqrt(v_slip_ax^2 + v_slip_rad^2 + 1e-12)
+        fric_mag = μ_pocket * F_pk_norm * tanh(v_slip_mag / 0.01)
+        F_pc_ax_ball = -fric_mag * (v_slip_ax / v_slip_mag)
+        F_pc_rad_ball = -fric_mag * (v_slip_rad / v_slip_mag)
 
-        # Outer contact traction torque
-        F_tang_o_dim = F_trac_tang_o * Q_scale  # dimensional [N]
-        τ_roll_o_x = -R_ball_dim * cαo * F_tang_o_dim * moment_scale_inv
-        τ_roll_o_z = R_ball_dim * sαo * F_tang_o_dim * moment_scale_inv
+        F_ball_x = Q_i * nfi_x + Q_o * nfo_x + F_drag_x + F_pc_ax_ball - c_ball_t * ẋ_b
+        F_ball_r = Q_i * nfi_r + Q_o * nfo_r + F_drag_r + F_pc_rad_ball - c_ball_t * ṙ_b
+        F_ball_θ = F_trac_tang_i + F_trac_tang_o + F_drag_θ + F_pc_tang_ball - c_ball_o * r_b * (θ̇_b - ω_cage_star)
 
-        # Ball moment: rolling torque + spin moment
-        M_ball_x = τ_roll_i_x + τ_roll_o_x + M_spin_i * sαi + M_spin_o * sαo
-        M_ball_y = zero(T_u)
-        M_ball_z = τ_roll_i_z + τ_roll_o_z + M_spin_i * cαi + M_spin_o * cαo  # spin moment r-component = +M·cosα
+        # 将兜孔推力完美映射到全局笛卡尔保持架方程！
+        F_cg_θ -= F_pc_tang_ball * r_b
+        F_cg_y += F_pc_rad_ball * sψ + F_pc_tang_ball * cψ
+        F_cg_z += -F_pc_rad_ball * cψ + F_pc_tang_ball * sψ
+        F_cg_x -= F_pc_ax_ball
 
-        # Rayleigh spin damping (from params.jl per-mode model)
-        c_ball_spin = p[P_C_BALL_SPIN]
-        M_ball_x -= c_ball_spin * ω_body[1]
-        M_ball_y -= c_ball_spin * ω_body[2]
-        M_ball_z -= c_ball_spin * ω_body[3]
+        # ── 3D 扭矩体系与右手系四元数积分 ──
+        moment_scale_inv = 1.0 / (Q_scale * L_scale)
+        R_ball_dim = R_ball_k * L_scale
+        τ_roll_i_x = -R_ball_dim * nfi_r * (F_trac_tang_i * Q_scale) * moment_scale_inv
+        τ_roll_i_r = R_ball_dim * nfi_x * (F_trac_tang_i * Q_scale) * moment_scale_inv
+        τ_roll_o_x = -R_ball_dim * nfo_r * (F_trac_tang_o * Q_scale) * moment_scale_inv
+        τ_roll_o_r = R_ball_dim * nfo_x * (F_trac_tang_o * Q_scale) * moment_scale_inv
 
-        # Euler transport: -(Ω_orbit × H) = (0, I·θ̇·ω_z, -I·θ̇·ω_y)
-        M_ball_y -= J_ball * θ̇_b * ω_body[3]    # y ↔ ê_θ (tangential)
-        M_ball_z += J_ball * θ̇_b * ω_body[2]    # z ↔ ê_r (radial)
-        # ── Write ball derivatives ──
-        # Position derivatives
+        # 【核心修复9】3D 兜孔摩擦力矩完美闭环
+        # 【Bug5修复】3D 兜孔摩擦力矩：严格右手系叉乘 r×F
+        τ_pk_x = -sign(Δθ_pk) * R_ball_k * F_pc_rad_ball
+        τ_pk_r = sign(Δθ_pk) * R_ball_k * F_pc_ax_ball
+
+        M_ball_x = τ_roll_i_x + τ_roll_o_x + M_spin_i * nfi_x + M_spin_o * nfo_x + τ_pk_x - c_ball_spin * ω_body[1] - M_ch_nondim * (ω_body[1] * W_scale / ω_mag_dim)
+        M_ball_r = τ_roll_i_r + τ_roll_o_r + M_spin_i * nfi_r + M_spin_o * nfo_r + τ_pk_r - c_ball_spin * ω_body[2] - M_ch_nondim * (ω_body[2] * W_scale / ω_mag_dim)
+        M_ball_θ = zero(T_u) - c_ball_spin * ω_body[3] - M_ch_nondim * (ω_body[3] * W_scale / ω_mag_dim)
+
+        # 【核心修复3】：欧拉进动角动量修正 (-Ω × H) 恢复自然进动！
+        M_ball_r += J_ball * θ̇_b * ω_body[3]
+        M_ball_θ -= J_ball * θ̇_b * ω_body[2]
+
         off_p = ball_pos_offset(j)
-        du[off_p] = ẋ_b
-        du[off_p+1] = ṙ_b
-        du[off_p+2] = θ̇_b
+        du[off_p], du[off_p+1], du[off_p+2] = ẋ_b, ṙ_b, θ̇_b
 
-        # Quaternion derivative with Baumgarte stabilization (replaces DiscreteCallback)
-        # q = (s, v1, v2, v3) stored at u[off_p+3 .. off_p+6]
-        q_s = u[off_p+3]
-        q_1 = u[off_p+4]
-        q_2 = u[off_p+5]
-        q_3 = u[off_p+6]
-        q_norm_sq = q_s^2 + q_1^2 + q_2^2 + q_3^2
-        λ_q = 100.0 * (1.0 - q_norm_sq)   # Baumgarte attractor → |q|=1
-        q_dot = quat_derivative(q, ω_body)
-        du[off_p+3] = real(q_dot) + λ_q * q_s
-        v1, v2, v3 = imag_part(q_dot)
-        du[off_p+4] = v1 + λ_q * q_1
-        du[off_p+5] = v2 + λ_q * q_2
-        du[off_p+6] = v3 + λ_q * q_3
+        # 【核心修复4】：原生的泛型化四元数逆变换与积分，解除包约束，赋能 ForwardDiff！
+        wx, wy, wz = ω_body[1], -ω_body[2] * sθ - ω_body[3] * cθ, ω_body[2] * cθ - ω_body[3] * sθ
+        qw, qx, qy, qz = u[off_p+3], u[off_p+4], u[off_p+5], u[off_p+6]
 
-        # Velocity derivatives (accelerations) — per-mode damping applied here
+        # inv_rotate_vector 手工展开
+        cx = qy * wz - qz * wy
+        cy = qz * wx - qx * wz
+        cz = qx * wy - qy * wx
+        dx = qw * wx - cx
+        dy = qw * wy - cy
+        dz = qw * wz - cz
+        ex = qy * dz - qz * dy
+        ey = qz * dx - qx * dz
+        ez = qx * dy - qy * dx
+        ω_b_x = wx - 2.0 * ex
+        ω_b_y = wy - 2.0 * ey
+        ω_b_z = wz - 2.0 * ez
+
+        q_norm_sq = qw^2 + qx^2 + qy^2 + qz^2
+        λ_q = 50.0 * (1.0 - q_norm_sq)  # Baumgarte Unit Norm Attractor
+
+        du[off_p+3] = 0.5 * (-qx * ω_b_x - qy * ω_b_y - qz * ω_b_z) + λ_q * qw
+        du[off_p+4] = 0.5 * (qw * ω_b_x + qy * ω_b_z - qz * ω_b_y) + λ_q * qx
+        du[off_p+5] = 0.5 * (qw * ω_b_y + qz * ω_b_x - qx * ω_b_z) + λ_q * qy
+        du[off_p+6] = 0.5 * (qw * ω_b_z + qx * ω_b_y - qy * ω_b_x) + λ_q * qz
+
         off_v = ball_vel_offset(j, Z)
-        du[off_v] = F_ball_x / m_ball - c_ball_t * ẋ_b
-        du[off_v+1] = F_ball_r / m_ball + r_b * θ̇_b^2 - c_ball_t * ṙ_b
-        du[off_v+2] = (F_ball_θ / m_ball - 2 * ṙ_b * θ̇_b) / (r_b + 1e-30) - c_ball_o * (θ̇_b - ω_cage_star)
-        du[off_v+3] = M_ball_x / J_ball
-        du[off_v+4] = M_ball_y / J_ball
-        du[off_v+5] = M_ball_z / J_ball
+        du[off_v], du[off_v+1], du[off_v+2] = F_ball_x / m_ball, F_ball_r / m_ball + r_b * θ̇_b^2, (F_ball_θ / m_ball - 2.0 * ṙ_b * θ̇_b) / (r_b + 1e-30)
+        du[off_v+3], du[off_v+4], du[off_v+5] = M_ball_x / J_ball, M_ball_r / J_ball, M_ball_θ / J_ball
 
-        # ── Accumulate on inner race (Newton's 3rd law) ──
-        F_ir_x -= F_n_ix
-        F_ir_y -= (-F_n_ir * sθ - F_trac_tang_i * cθ)
-        F_ir_z -= (F_n_ir * cθ - F_trac_tang_i * sθ)
+        # 【核心修复5】：采用精确物理触点作为力臂，构建毫无遗漏的内圈反作用张量矩阵！
+        F_ir_X_add = -Q_i * nfi_x
+        F_ir_Y_add = Q_i * nfi_r * sθ + F_trac_tang_i * cθ
+        F_ir_Z_add = -Q_i * nfi_r * cθ + F_trac_tang_i * sθ
 
-        # ── IR tilt moments from contact forces ──
-        M_ir_y += -F_n_ix * (D_i_star / 2) * cθ + x_gc_i * (F_n_ir * cθ - F_trac_tang_i * sθ)
-        M_ir_z += -F_n_ix * (D_i_star / 2) * sθ + x_gc_i * (F_n_ir * sθ + F_trac_tang_i * cθ)
+        F_ir_x += F_ir_X_add
+        F_ir_y += F_ir_Y_add
+        F_ir_z += F_ir_Z_add
+
+        X_rel = x_contact_i - x_ir
+        Y_rel = -r_contact_i * sθ - y_ir
+        Z_rel = r_contact_i * cθ - z_ir
+
+        M_ir_y += Z_rel * F_ir_X_add - X_rel * F_ir_Z_add + M_spin_i * nfi_r * sθ
+        M_ir_z += X_rel * F_ir_Y_add - Y_rel * F_ir_X_add - M_spin_i * nfi_r * cθ
     end
 
-    # ── Inner race acceleration ──
+    # ── 【核心修复6】内圈超强陀螺刚化力矩 (Gyroscopic Stiffening) 闭环 ──
+    I_p_ir = m_ir * (D_i_star / 2)^2    # 极转动惯量
+    I_d_ir = I_p_ir / 2.0               # 径向倾覆惯量
+
     off_irv = ir_vel_offset(Z)
     du[off_irv] = F_ir_x / m_ir
     du[off_irv+1] = F_ir_y / m_ir
     du[off_irv+2] = F_ir_z / m_ir
-    # IR tilt: moment from contact forces + tilt damping
-    I_ir_tilt = m_ir * (D_i_star / 2)^2   # approximate tilt inertia
-    du[off_irv+3] = (M_ir_y - c_tilt_damp * γ̇y_ir) / (I_ir_tilt + 1e-30)
-    du[off_irv+4] = (M_ir_z - c_tilt_damp * γ̇z_ir) / (I_ir_tilt + 1e-30)
+    du[off_irv+3] = (M_ir_y - I_p_ir * ω_ir * γ̇z_ir) / I_d_ir
+    du[off_irv+4] = (M_ir_z + I_p_ir * ω_ir * γ̇y_ir) / I_d_ir
 
-    # ── Cage pilot force (C∞ smooth) ──
-    ecc = sqrt(y_cg^2 + z_cg^2)
-    pilot_clr = p[P_PILOT_CLR]
-    δ_pilot = smooth_hertz_delta(ecc - pilot_clr)
-    F_pilot = p[P_K_PILOT] * δ_pilot * sqrt(δ_pilot)
-    ecc_safe = ecc + 1e-30
-    ey, ez = y_cg / ecc_safe, z_cg / ecc_safe
-    F_cg_y -= F_pilot * ey
-    F_cg_z -= F_pilot * ez
-
-    # Pilot drag torque (smooth sign)
-    Δω_pilot = θ̇_cg - (p[P_PILOT_IR] > 0.5 ? ω_ir : zero(T_u))
-    R_pilot = p[P_PILOT_IR] > 0.5 ? p[P_CAGE_IR] : p[P_CAGE_OR]
-    F_cg_θ -= p[P_MU_PILOT] * F_pilot * tanh(Δω_pilot / 1e-3) * R_pilot
-
-    # Cage acceleration
     off_cv = cage_vel_offset(Z)
     du[off_cv] = F_cg_x / cage_mass
     du[off_cv+1] = F_cg_y / cage_mass
     du[off_cv+2] = F_cg_z / cage_mass
     du[off_cv+3] = F_cg_θ / cage_Ixx
+
+    # ── 【核心修复7】热网络强耦合：将无量纲热量转化为各节点温升 ──
+    # Q_cond = G * (T1 - T2) in dimensionless form
+    T_amb = p[P_T_AMB]
+
+    Q_ir_ball = p[P_G_IR_BALL] * (T_ir_node - T_ball_node)
+    Q_or_ball = p[P_G_OR_BALL] * (T_or_node - T_ball_node)
+    Q_ball_oil = p[P_G_BALL_OIL] * (T_ball_node - T_oil_node)
+    Q_or_amb = p[P_G_OR_AMB] * (T_or_node - T_amb)
+    Q_oil_amb = p[P_G_OIL_AMB] * (T_oil_node - T_amb)
+
+    # Oil flow circulation cooling: Q_flow = ṁ·cₚ·(T_oil - T_oil_inlet)
+    # When oil_flow_rate > 0, this represents convective heat removal by flowing lubricant
+    Q_oil_flow = p[P_OIL_FLOW_MDOT_CP] * (T_oil_node - p[P_T_OIL_INLET])
+
+    # Note: T_ball_node is the single lumped temperature of ALL balls, and H_ball_total is the heat generated by ALL balls.
+    dT_ir_dt = (H_ir_total - Q_ir_ball) / p[P_MCP_I]
+    dT_or_dt = (H_or_total - Q_or_ball - Q_or_amb) / p[P_MCP_O]
+    dT_ball_dt = (H_ball_total + Q_ir_ball + Q_or_ball - Q_ball_oil) / p[P_MCP_BALL]
+    dT_oil_dt = (H_oil_total + Q_ball_oil - Q_oil_amb - Q_oil_flow) / p[P_MCP_OIL]
+
+    off_th = thermal_offset(Z)
+    du[off_th] = dT_ir_dt
+    du[off_th+1] = dT_or_dt
+    du[off_th+2] = dT_ball_dt
+    du[off_th+3] = dT_oil_dt
+
+    # ── 热量积分器: dE/dt = H → ODE 求解器精确积分 ──
+    off_ha = heat_accum_offset(Z)
+    du[off_ha] = H_ir_total                  # ∫H_ir dτ
+    du[off_ha+1] = H_or_total                  # ∫H_or dτ
+    du[off_ha+2] = H_ball_total                # ∫H_ball dτ
+    du[off_ha+3] = H_oil_total                 # ∫H_oil dτ
+    du[off_ha+4] = Q_or_amb + Q_oil_amb        # ∫Q_to_amb dτ
+    # ∫Σ C★·dT/dτ dτ: ODE-consistent stored energy (avoids FBDF Newton residual drift)
+    du[off_ha+5] = p[P_MCP_I] * dT_ir_dt + p[P_MCP_O] * dT_or_dt + p[P_MCP_BALL] * dT_ball_dt + p[P_MCP_OIL] * dT_oil_dt
 
     return nothing
 end

@@ -22,6 +22,7 @@ using SparseArrays
 # ── Layer 1: Configuration ──────────────────────────────────────────
 include("Config/validation.jl")
 include("Config/types.jl")
+include("Config/parser.jl")
 
 export BearingGeometry, MaterialParams, LubricantParams, TractionParams
 export CageGeometry, ChurningParams, IntegratorConfig, SimulationConfig
@@ -31,8 +32,9 @@ export inner_race_mass, sum_rho_inner, sum_rho_outer, F_rho_inner, F_rho_outer
 export E_star, composite_modulus
 
 # Convenience constructors
-export bearing_7210B, lubricant_mil_l_23699, traction_params_default
-export cage_from_bearing
+export bearing_7210B, bearing_7008C, bearing_7010C, bearing_7014C, bearing_custom,
+  lubricant_mil_l_23699, traction_params_default
+export cage_from_bearing, load_simulation_config
 
 # ── Layer 2: Physics (stateless pure functions) ─────────────────────
 include("Physics/hertz.jl")

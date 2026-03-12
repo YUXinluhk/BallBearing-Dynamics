@@ -1,0 +1,61 @@
+# Julia
+Manifest.toml
+
+# Results / output (regeneratable)
+results/
+
+# Temporary files
+tmp_*.jl
+tmp_*.txt
+test_*.jl
+test_*.txt
+test_*.log
+*.log
+err.txt
+err_clean.txt
+check_heat*.txt
+heat_output*.txt
+validation_output.txt
+validation_utf8.txt
+
+# Python GUI / scripts (not part of solver)
+gui_app.py
+feishu_push_review.py
+
+# NPY data exchange
+julia_npy/
+
+# Thesis / docs (separate repo)
+thesis/
+
+# One-off scripts
+add_deps.jl
+add_toml.jl
+read_err.jl
+tmp_case5.jl
+test_err_capture.jl
+main.jl
+
+# Deep-think notes
+deepthink.md
+
+# LaTeX build artifacts
+paper/*.aux
+paper/*.out
+paper/*.spl
+paper/*.synctex*
+paper/*.fls
+paper/*.fdb_latexmk
+paper/*.bbl
+paper/*.blg
+
+# GUI temp config
+inputs/gui_case.toml
+
+# IDE / OS
+.vscode/
+.idea/
+*.swp
+*~
+Thumbs.db
+.DS_Store

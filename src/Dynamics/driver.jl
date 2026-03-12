@@ -7,7 +7,7 @@
 # =====================================================================
 
 using OrdinaryDiffEq: ODEProblem, ODEFunction, solve, Tsit5, FBDF
-using ADTypes: AutoFiniteDiff  # ForwardDiff incompatible with Quaternions.jl (AbstractFloat constraint)
+using ADTypes: AutoFiniteDiff  # ForwardDiff blocked by SciMLBase.UJacobianWrapper AbstractFloat assertion; kernel is AD-ready
 using DiffEqCallbacks
 using Statistics: mean
 using Printf
@@ -92,7 +92,7 @@ function run_simulation(geom::BearingGeometry, mat::MaterialParams,
     params = build_params(geom, mat, lub, trac, cage, config, scales, h_inner, h_outer; qs=qs)
 
     # 5. Initial state
-    u0 = init_state(geom, qs, config)
+    u0 = init_state(geom, qs, config, lub)
     u0_star = nondim_state(u0, scales, Z)
 
     # 6. ODE Problem

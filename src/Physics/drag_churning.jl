@@ -36,17 +36,19 @@ end
 
 Disk-approximation churning moment (Eq 5.11).
 M_e = ½ρω²r⁵·C_n, with laminar/turbulent C_n.
+Generic: supports Float64 and ForwardDiff.Dual.
 """
-function churning_moment(ω_abs::Float64, r::Float64, ρ::Float64, μ::Float64)
-    (ω_abs < 1e-10 || ρ < 1e-10 || r < 1e-10) && return 0.0
+function churning_moment(ω_abs, r, ρ, μ)
+    T_ret = typeof(ω_abs * r * ρ)
+    (ω_abs < 1e-10 || ρ < 1e-10 || r < 1e-10) && return zero(T_ret)
     Re = ρ * r^2 * ω_abs / μ
-    Re < 1e-10 && return 0.0
+    Re < 1e-10 && return zero(T_ret)
 
-    C_n = if Re < 300_000.0
-        3.87 / sqrt(Re)          # laminar
-    else
-        0.146 / Re^0.20          # turbulent
-    end
+    # Smooth laminar/turbulent transition (C∞) via blending, avoids if/else branch for AD
+    C_lam = 3.87 / sqrt(Re + 1e-30)
+    C_turb = 0.146 / (Re + 1e-30)^0.20
+    σ = 1.0 / (1.0 + exp(-(Re - 300_000.0) / 30_000.0))  # sigmoid blend
+    C_n = (1.0 - σ) * C_lam + σ * C_turb
 
     return 0.5 * ρ * ω_abs^2 * r^5 * C_n
 end
@@ -54,7 +56,7 @@ end
 """
     effective_density(ρ_oil, ρ_air, fill) → ρ_eff
 """
-@inline function effective_density(ρ_oil::Float64, ρ_air::Float64, fill::Float64)
+@inline function effective_density(ρ_oil, ρ_air, fill)
     f = clamp(fill, 0.0, 1.0)
     return ρ_oil * f + ρ_air * (1.0 - f)
 end
