@@ -118,3 +118,36 @@ function omega_body_from_euler(η, ξ, λ, η̇, ξ̇, λ̇)
     ω_z = -η̇ * sξ + λ̇
     return SVector{3}(ω_x, ω_y, ω_z)
 end
+
+"""
+    kinematics_quat_derivative_baumgarte(qw, qx, qy, qz, wx, wy, wz, λ_gain)
+
+Generic allocation-free quaternion derivative with Baumgarte stabilization.
+Computes `dq = 0.5 * q ⊗ [0, ω_b] + λ * q` where the vector components are expanded out.
+Returns `(dqw, dqx, dqy, dqz)`.
+"""
+@inline function kinematics_quat_derivative_baumgarte(qw, qx, qy, qz, wx, wy, wz, λ_gain)
+    # inv_rotate_vector 手工展开
+    cx = qy * wz - qz * wy
+    cy = qz * wx - qx * wz
+    cz = qx * wy - qy * wx
+    dx = qw * wx - cx
+    dy = qw * wy - cy
+    dz = qw * wz - cz
+    ex = qy * dz - qz * dy
+    ey = qz * dx - qx * dz
+    ez = qx * dy - qy * dx
+    ω_b_x = wx - 2.0 * ex
+    ω_b_y = wy - 2.0 * ey
+    ω_b_z = wz - 2.0 * ez
+
+    q_norm_sq = qw^2 + qx^2 + qy^2 + qz^2
+    λ_q = λ_gain * (1.0 - q_norm_sq)  # Baumgarte Unit Norm Attractor
+
+    dqw = 0.5 * (-qx * ω_b_x - qy * ω_b_y - qz * ω_b_z) + λ_q * qw
+    dqx = 0.5 * (qw * ω_b_x + qy * ω_b_z - qz * ω_b_y) + λ_q * qx
+    dqy = 0.5 * (qw * ω_b_y + qz * ω_b_x - qx * ω_b_z) + λ_q * qy
+    dqz = 0.5 * (qw * ω_b_z + qx * ω_b_y - qy * ω_b_x) + λ_q * qz
+
+    return dqw, dqx, dqy, dqz
+end

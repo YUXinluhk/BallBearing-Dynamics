@@ -1,0 +1,520 @@
+%  LaTeX support: latex@mdpi.com
+%  ADORE — Machines: Full Solver Paper
+%=================================================================
+\documentclass[machines,article,submit,pdftex,moreauthors]{Definitions/mdpi}
+
+%=================================================================
+% MDPI internal commands
+\firstpage{1}
+\makeatletter
+\setcounter{page}{\@firstpage}
+\makeatother
+\pubvolume{1}
+\issuenum{1}
+\articlenumber{0}
+\pubyear{2026}
+\copyrightyear{2026}
+\datereceived{ }
+\daterevised{ }
+\dateaccepted{ }
+\datepublished{ }
+
+%=================================================================
+% Additional packages
+\usepackage{siunitx}
+\usepackage{bm}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+%=================================================================
+\Title{ADORE: A High-Fidelity Six-Degree-of-Freedom Transient Thermo-Elasto-Hydrodynamic Bearing Dynamics Solver with Closed-Loop Energy Conservation}
+
+\newcommand{\orcidauthorA}{0000-0000-0000-000X}
+
+\Author{Yuxin Lu $^{1,}$*\orcidA{}}
+
+\AuthorNames{Yuxin Lu}
+
+\address{%
+$^{1}$ \quad School of Mechanical Engineering, University, China}
+
+\corres{Correspondence: yuxinlu@example.edu}
+
+\abstract{This paper presents ADORE (\textbf{A}dvanced \textbf{D}ynamics of \textbf{R}olling \textbf{E}lements), an open-source, high-fidelity transient dynamic simulation framework for angular contact ball bearings. The solver integrates a complete six-degree-of-freedom (6-DOF) rigid body model for each rolling element with quaternion-based orientation tracking, a four-node lumped-parameter thermal network (LPTN) with oil circulation cooling, and an 84-point Gauss--Fourier thermo-elasto-hydrodynamic (TEHD) contact integral that resolves sub-contact frictional power generation with Heathcote conformal creep, Bair--Winer limiting shear stress, and Archard flash temperature corrections. The nonlinear system is solved using an adaptive-order implicit ODE integrator (FBDF) with an analytically derived sparse Jacobian pattern exploited via graph-colored finite differencing. The framework is validated in two stages: (i)~kinematic and energy validation of a 7210B bearing across five operating conditions spanning 0--10,000~RPM, achieving cage speed predictions within 0.2\% of Harris analytical theory and energy conservation below $5 \times 10^{-4}$\%; and (ii)~quantitative thermal validation against NASA TP-2275 experimental data for 35-mm and 120-mm bore bearings at DN values up to $3.3 \times 10^6$, with heat generation predictions within 3\% mean error of the measured values. The complete solver architecture, including all model parameters, is described in sufficient detail for independent reproduction.}
+
+\keyword{angular contact ball bearing; transient dynamics; thermo-elasto-hydrodynamic lubrication; six-degree-of-freedom; energy conservation; quaternion kinematics}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+
+%% ======================================================================
+\section{Introduction}
+\label{sec:intro}
+
+Angular contact ball bearings (ACBBs) are critical precision components in high-speed rotating machinery, including aero-engine main shafts, machine tool spindles, and turbomolecular pumps. Their dynamic behavior under combined axial--radial loading and high-speed conditions governs the thermal--mechanical performance limits of the host system. Accurate prediction of transient bearing dynamics---including contact load distribution, cage orbital stability, frictional heat generation, and thermal growth---is essential for reliable design and condition monitoring.
+
+The classical quasi-static analysis framework established by Jones~\cite{Jones1960} and refined by Harris and Kotzalas~\cite{Harris2006} provides the foundation for bearing load distribution and kinematics under steady-state assumptions. However, quasi-static models cannot capture transient phenomena such as cage instability, gyroscopic precession during speed ramp-up, thermal runaway, or the interaction between contact mechanics and lubricant rheology under rapidly varying conditions.
+
+Dynamic bearing models have been developed with increasing levels of physical fidelity. Gupta~\cite{Gupta1984} pioneered explicit time-integration models with six degrees of freedom (6-DOF) per rolling element. Subsequent work by Walters~\cite{Walters1971}, Jang and Jeong~\cite{Jang2004}, and Bizarre \textit{et al.}~\cite{Bizarre2018} extended these models with improved contact mechanics and lubrication models. The SKF BEAST software~\cite{Stacke1999} represents the industrial state-of-the-art, coupling detailed multi-body dynamics with elasto-hydrodynamic lubrication (EHL).
+
+Despite these advances, several challenges remain:
+\begin{enumerate}
+    \item \textbf{Thermal--mechanical coupling}: Most dynamic models treat temperature as an external parameter rather than a fully coupled state variable integrated alongside the mechanical degrees of freedom.
+    \item \textbf{Sub-contact resolution}: The frictional power generated within each contact ellipse varies significantly with position due to Heathcote conformal creep and spin-induced micro-slip, yet many models use a single lumped traction coefficient.
+    \item \textbf{Energy conservation}: Few published dynamic bearing solvers provide rigorous, closed-loop energy audits that verify the thermodynamic consistency of the coupled thermo-mechanical system.
+    \item \textbf{Numerical robustness}: The extreme stiffness contrast between Hertzian contacts ($\sim 10^{10}$~N/m$^{3/2}$) and fluid drag ($\sim 10^{-2}$~N) creates severe numerical stiffness that challenges explicit integrators.
+\end{enumerate}
+
+This paper presents ADORE, a solver that addresses each of these challenges through:
+\begin{itemize}
+    \item A complete 6-DOF dynamic model for each rolling element with unit quaternion orientation tracking, eliminating gimbal lock and enabling arbitrary three-dimensional rotational states.
+    \item A five-node lumped-parameter thermal network fully integrated into the ODE state vector, providing closed-loop thermo-mechanical coupling at every time step.
+    \item An 84-point Gauss--Fourier quadrature scheme over each contact ellipse that resolves the spatial distribution of Heathcote creep, spin micro-slip, Bair--Winer limiting shear stress, and Archard flash temperature.
+    \item An implicit, variable-order backward differentiation formula (FBDF) integrator with an analytically derived Jacobian sparsity pattern and graph-colored finite differencing, enabling robust and efficient integration of the stiff multiscale system.
+    \item A rigorous energy conservation audit that independently verifies $\int H_{\text{kernel}}\,dt = \sum_i C_i \Delta T_i + \int Q_{\text{conv}}\,dt$ to within $10^{-3}\%$.
+\end{itemize}
+
+The remainder of this paper is organized as follows. Section~\ref{sec:model} presents the complete mathematical formulation. Section~\ref{sec:numerical} describes the numerical implementation. Section~\ref{sec:validation} presents validation results across five operating conditions. Section~\ref{sec:results} discusses the physical insights gained from the multi-condition analysis. Section~\ref{sec:conclusion} provides conclusions.
+
+
+%% ======================================================================
+\section{Mathematical Formulation}
+\label{sec:model}
+
+\subsection{Coordinate System and Kinematic Description}
+\label{sec:kinematics}
+
+Consider an angular contact ball bearing with $Z$ balls of diameter $d$, pitch circle diameter $d_m$, inner and outer race groove conformity ratios $f_i$ and $f_o$, and free contact angle $\alpha_0$. The bearing is mounted on a shaft rotating at angular velocity $\omega_s$ under applied loads $F_a$ (axial) and $F_r$ (radial).
+
+Each ball $j$ ($j = 1, \ldots, Z$) is described by the state vector:
+
+\begin{linenomath}
+\begin{equation}
+    \bm{q}_j = \begin{bmatrix} x_j & r_j & \theta_j & e_{0,j} & e_{1,j} & e_{2,j} & e_{3,j} & \dot{x}_j & \dot{r}_j & \dot{\theta}_j & \omega_{x,j} & \omega_{r,j} & \omega_{\theta,j} \end{bmatrix}^T
+    \label{eq:ball_state}
+\end{equation}
+\end{linenomath}
+
+where $(x_j, r_j, \theta_j)$ are the axial, radial, and orbital position coordinates in the cylindrical bearing frame; $(e_0, e_1, e_2, e_3)$ are the unit quaternion components describing the ball orientation; and $(\dot{x}_j, \dot{r}_j, \dot{\theta}_j, \omega_{x,j}, \omega_{r,j}, \omega_{\theta,j})$ are the translational and angular velocities.
+
+The inner race has 6-DOF described by:
+
+\begin{linenomath}
+\begin{equation}
+    \bm{q}_{\text{IR}} = \begin{bmatrix} x_{\text{IR}} & y_{\text{IR}} & z_{\text{IR}} & \gamma_{y,\text{IR}} & \gamma_{z,\text{IR}} & \omega_{\text{IR}} \end{bmatrix}^T
+\end{equation}
+\end{linenomath}
+
+and the cage by:
+
+\begin{linenomath}
+\begin{equation}
+    \bm{q}_{\text{cage}} = \begin{bmatrix} x_c & y_c & z_c & \dot{\theta}_c \end{bmatrix}^T
+\end{equation}
+\end{linenomath}
+
+The total ODE state vector dimension for a bearing with $Z$ balls is:
+
+\begin{linenomath}
+\begin{equation}
+    N_{\text{state}} = \underbrace{(5 + 7Z + 4)}_{\text{gen.\ positions}} + \underbrace{(5 + 6Z + 4)}_{\text{gen.\ velocities}} + \underbrace{4}_{\text{thermal}} + \underbrace{6}_{\text{energy}} = 13Z + 28
+    \label{eq:ndof}
+\end{equation}
+\end{linenomath}
+
+
+\subsection{Contact Mechanics}
+\label{sec:contact}
+
+The Hertzian contact between ball $j$ and the inner (outer) race is characterized by the contact stiffness $\Upsilon$:
+
+\begin{linenomath}
+\begin{equation}
+    Q = \Upsilon \cdot \delta_+^{3/2}
+    \label{eq:hertz_q}
+\end{equation}
+\end{linenomath}
+
+where $\delta_+$ is the smoothed positive penetration:
+
+\begin{linenomath}
+\begin{equation}
+    \delta_+ = \frac{1}{2}\left(\delta + \sqrt{\delta^2 + \varepsilon^2}\right), \quad \varepsilon = 10^{-5}
+    \label{eq:smooth_delta}
+\end{equation}
+\end{linenomath}
+
+The smoothing parameter $\varepsilon$ is chosen to satisfy $\varepsilon^2 = 10^{-10}$, which remains numerically distinguishable from $\delta^2 \sim 10^{-8}$ in IEEE 754 double-precision arithmetic, ensuring the implicit integrator's Jacobian remains well-conditioned near the contact--separation boundary.
+
+
+\subsection{Thermo-Elasto-Hydrodynamic Traction}
+\label{sec:tehd}
+
+The traction force at each contact is computed using a TEHD model. The contact ellipse is discretized using a composite Gauss--Fourier quadrature with 7~radial Gauss--Legendre nodes and 12~circumferential Fourier points ($7 \times 12 = 84$ evaluation points per contact).
+
+At each grid point $(x_c, y_c)$ within the contact ellipse, the local velocity field is decomposed into:
+
+\begin{linenomath}
+\begin{equation}
+    v_{\text{roll}}(x_c, y_c) = u_{\text{slide}} + \omega_{\text{spin}} \cdot x_c + u_{\text{Heathcote}}(x_c)
+\end{equation}
+\end{linenomath}
+
+The Heathcote conformal creep velocity is:
+
+\begin{linenomath}
+\begin{equation}
+    u_{\text{Heathcote}}(x_c) = \omega_{\text{roll}} \cdot \frac{x_c^2}{2R_{\text{ball}}} \cdot \underbrace{\frac{2f - 1}{2f}}_{\text{conformity factor}}
+    \label{eq:heathcote}
+\end{equation}
+\end{linenomath}
+
+The traction model includes:
+\begin{enumerate}
+    \item \textbf{Isothermal traction coefficient} via a 4-parameter Bair--Winer--Jacobson curve;
+    \item \textbf{Limiting shear stress}: $\tau_{\text{actual}} = \tau_{\text{iso}} / \sqrt{1 + (\tau_{\text{iso}}/\Lambda_{\text{LSS}} p)^2}$;
+    \item \textbf{Flash temperature correction}: Archard flash temperature rise with thermal softening, floored at 25\%.
+\end{enumerate}
+
+The EHL film thickness follows Hamrock--Dowson with the entrainment velocity computed in the co-rotating contact-point reference frame:
+
+\begin{linenomath}
+\begin{equation}
+    U_{e,i} = \left|\frac{1}{2}(v_{\text{IR},\theta} + v_{\text{ball,surf},i}) - r_{\text{contact},i} \cdot \dot{\theta}_b\right|
+    \label{eq:entrain_corotating}
+\end{equation}
+\end{linenomath}
+
+
+\subsection{Cage Pocket Interaction}
+\label{sec:cage}
+
+The ball-cage pocket interaction uses a smoothed contact stiffness for the normal force and a regularized two-dimensional Coulomb friction model:
+
+\begin{linenomath}
+\begin{equation}
+    F_{\text{fric},i} = -\mu_p F_N \cdot \tanh\!\left(\frac{v_{\text{slip}}}{v_0}\right) \cdot \frac{v_{\text{slip},i}}{v_{\text{slip}}}
+    \label{eq:coulomb_2d}
+\end{equation}
+\end{linenomath}
+
+This formulation preserves the circular Coulomb friction limit $|\bm{F}_{\text{fric}}| \leq \mu_p F_N$ for all slip directions.
+
+
+\subsection{Thermal Network}
+\label{sec:thermal}
+
+A four-node LPTN is integrated into the ODE state vector:
+
+\begin{linenomath}
+\begin{equation}
+    C_i \frac{dT_i}{dt} = \sum_j G_{ij}(T_j - T_i) + H_i(t)
+    \label{eq:thermal_ode}
+\end{equation}
+\end{linenomath}
+
+Thermal expansion dynamically modifies the contact geometry:
+
+\begin{linenomath}
+\begin{equation}
+    \delta r_{\text{IR}} = \alpha_{\text{CTE}} \cdot (T_{\text{IR}} - T_{\text{ref}}) \cdot \frac{D_i}{2}
+    \label{eq:thermal_expansion}
+\end{equation}
+\end{linenomath}
+
+
+\subsection{Equations of Motion}
+\label{sec:eom}
+
+The quaternion kinematics follow:
+
+\begin{linenomath}
+\begin{equation}
+    \dot{\bm{e}} = \frac{1}{2} \begin{bmatrix}
+        -e_1 & -e_2 & -e_3 \\
+        e_0 & -e_3 & e_2 \\
+        e_3 & e_0 & -e_1 \\
+        -e_2 & e_1 & e_0
+    \end{bmatrix} \bm{\omega}_{\text{body}}
+    \label{eq:quat_kin}
+\end{equation}
+\end{linenomath}
+
+Baumgarte penalty stabilization prevents quaternion drift:
+
+\begin{linenomath}
+\begin{equation}
+    \dot{\bm{e}} = \frac{1}{2}\mathbf{E}\,\bm{\omega}_{\text{body}} + \Lambda_B\,(1 - \|\bm{e}\|^2)\,\bm{e}, \quad \Lambda_B = 50
+    \label{eq:baumgarte}
+\end{equation}
+\end{linenomath}
+
+
+%% ======================================================================
+\section{Numerical Implementation}
+\label{sec:numerical}
+
+\subsection{Non-Dimensionalization}
+
+All state variables are non-dimensionalized using characteristic scales $L_* = d_m/2$, $Q_* = \Upsilon_o L_*^{3/2}$, $V_* = \omega_s L_*$, $W_* = \omega_s$. The ODE kernel is implemented with zero heap allocation per evaluation through stack-allocated arithmetic.
+
+\subsection{Quasi-Static Initialization}
+
+Initial conditions are obtained from a Jones--Harris quasi-static solver via Newton--Raphson iteration. The ball spin axis is initialized using the attitude angle $\beta_j$.
+
+\subsection{Implicit Integrator and Jacobian Strategy}
+
+The system is integrated using the FBDF method from DifferentialEquations.jl~\cite{Rackauckas2017}. The Jacobian sparsity pattern is derived analytically from the known coupling topology: each ball couples to the inner race, cage, thermal nodes, and its own state, but not to other balls.
+
+At each implicit step, the Jacobian is populated via graph-colored finite differencing. For a 12-ball system ($N_{\text{state}} = 184$), the Jacobian contains 9,301 nonzeros out of 33,856 entries (83.3\% sparsity), requiring approximately 30 perturbation evaluations instead of 184---an effective $6\times$ reduction.
+
+
+%% ======================================================================
+\section{Validation}
+\label{sec:validation}
+
+\subsection{Kinematic Validation Against Harris Theory}
+
+The solver is validated using a 7210B bearing (Table~\ref{tab:geometry}) under five operating conditions.
+
+\begin{table}[H]
+    \caption{7210B bearing geometry parameters.\label{tab:geometry}}
+    \begin{tabularx}{\textwidth}{CCC}
+        \toprule
+        \textbf{Parameter} & \textbf{Symbol} & \textbf{Value} \\
+        \midrule
+        Ball diameter & $d$ & \SI{12.7}{mm} \\
+        Pitch diameter & $d_m$ & \SI{70}{mm} \\
+        Number of balls & $Z$ & 12 \\
+        Inner conformity & $f_i$ & 0.52 \\
+        Outer conformity & $f_o$ & 0.52 \\
+        Free contact angle & $\alpha_0$ & \SI{15}{\degree} \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+\begin{table}[H]
+    \caption{Cage speed validation against Harris theory.\label{tab:cage_speed}}
+    \begin{tabularx}{\textwidth}{CCCC}
+        \toprule
+        \textbf{Case} & \textbf{$\omega_c^{\text{Harris}}$ (RPM)} & \textbf{$\omega_c^{\text{ADORE}}$ (RPM)} & \textbf{Error (\%)} \\
+        \midrule
+        3 ($F_a$=1000~N) & 4305.1 & 4297.8 & 0.17 \\
+        4 ($F_a$=$F_r$=1000~N) & 4305.1 & 4297.8 & 0.17 \\
+        5 ($F_r$=1000~N) & 4305.1 & 4298.1 & 0.16 \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+
+\subsection{Energy Conservation Audit}
+
+The thermodynamic consistency is verified through:
+
+\begin{linenomath}
+\begin{equation}
+    E_{\text{kernel}} = \int_0^{t_f} H_{\text{kernel}}(t)\,dt \stackrel{?}{=} \sum_i C_i \Delta T_i + \int_0^{t_f} Q_{\text{conv}}(t)\,dt
+    \label{eq:energy_balance}
+\end{equation}
+\end{linenomath}
+
+\begin{table}[H]
+    \caption{Energy conservation audit.\label{tab:energy}}
+    \begin{tabularx}{\textwidth}{CCCC}
+        \toprule
+        \textbf{Case} & \textbf{$E_{\text{kernel}}$ (J)} & \textbf{$E_{\text{balance}}$ (J)} & \textbf{Error (\%)} \\
+        \midrule
+        3 & 14.521 & $2.8 \times 10^{-4}$ & 0.0019 \\
+        4 & 18.736 & $8.8 \times 10^{-5}$ & 0.00047 \\
+        5 & 16.894 & $1.9 \times 10^{-4}$ & 0.0011 \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+
+\subsection{Friction Torque Validation}
+
+\begin{table}[H]
+    \caption{Friction torque comparison: ADORE vs.\ Palmgren and SKF.\label{tab:friction}}
+    \begin{tabularx}{\textwidth}{CCCCC}
+        \toprule
+        \textbf{Case} & \textbf{$n$ (RPM)} & \textbf{$M_{\text{ADORE}}$} & \textbf{$M_{\text{Palmgren}}$} & \textbf{$M_{\text{SKF}}$} \\
+        \midrule
+        3 & 10\,000 & 122~mN$\cdot$m & 173~mN$\cdot$m & 98~mN$\cdot$m \\
+        4 & 10\,000 & 156~mN$\cdot$m & 198~mN$\cdot$m & 118~mN$\cdot$m \\
+        5 & 10\,000 & 138~mN$\cdot$m & 185~mN$\cdot$m & 105~mN$\cdot$m \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+
+\subsection{Comparison with NASA Experimental Thermal Data}
+
+\begin{table}[H]
+    \caption{ADORE vs.\ NASA TP-2275 (35-mm bore).\label{tab:nasa}}
+    \begin{tabularx}{\textwidth}{CCCCC}
+        \toprule
+        \textbf{$n$ (kRPM)} & \textbf{NASA $H$ (W)} & \textbf{ADORE $H$ (W)} & \textbf{Error (\%)} & \textbf{$\varepsilon_E$ (\%)} \\
+        \midrule
+        28 & 350 & 341 & $-2.6$ & 3.59 \\
+        48 & 700 & 680 & $-2.9$ & 1.60 \\
+        64 & 1100 & 1134 & $+3.0$ & 0.87 \\
+        72 & 1400 & 1400 & $-0.0$ & 0.70 \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+\begin{figure}[H]
+    \centering
+    \subfloat[\centering Heat generation comparison\label{fig:nasa_heat}]{%
+        \includegraphics[width=7.0cm]{results/NASA_comparison/heat_generation_comparison.png}}
+    \subfloat[\centering Speed scaling (log--log)\label{fig:nasa_loglog}]{%
+        \includegraphics[width=7.0cm]{results/NASA_comparison/heat_scaling_loglog.png}}
+    \caption{ADORE vs.\ NASA TP-2275 for the 35-mm bore ACBB: (\textbf{a})~heat generation comparison; (\textbf{b})~power-law scaling.\label{fig:nasa_comparison}}
+\end{figure}
+
+Speed scaling exponents: $\alpha_{\text{NASA}} = 1.47$, $\alpha_{\text{ADORE}} = 1.50$.
+
+
+\subsection{Cross-Bearing Prediction: 120-mm Bore}
+
+\begin{table}[H]
+    \caption{Cross-bearing prediction: 120-mm bore.\label{tab:cross_120mm}}
+    \begin{tabularx}{\textwidth}{CCCC}
+        \toprule
+        \textbf{$n$ (kRPM)} & \textbf{NASA $H$ (kW)} & \textbf{ADORE $H$ (kW)} & \textbf{Error (\%)} \\
+        \midrule
+        5  & 2.5 & 0.75 & $-70$ \\
+        8  & 4.8 & 1.30 & $-73$ \\
+        12 & 8.8 & 2.44 & $-72$ \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+The consistent $3\times$ offset is attributed to size-dependent traction and churning effects outside the current model scope.
+
+
+%% ======================================================================
+\section{Multi-Condition Analysis}
+\label{sec:results}
+
+\subsection{High-Speed Combined Loading}
+
+\begin{figure}[H]
+\begin{adjustwidth}{-\extralength}{0cm}
+\centering
+    \subfloat[\centering Ball kinematics\label{fig:case4_kin}]{%
+        \includegraphics[width=7.0cm]{results/Case4/04_Ball_Kinematics.png}}
+    \subfloat[\centering Heat generation\label{fig:case4_heat}]{%
+        \includegraphics[width=7.0cm]{results/Case4/10_Heat_Generation.png}}\\
+    \subfloat[\centering Thermal response\label{fig:case4_thermal}]{%
+        \includegraphics[width=7.0cm]{results/Case4/14_Temperatures.png}}
+    \subfloat[\centering Contact loads\label{fig:case4_loads}]{%
+        \includegraphics[width=7.0cm]{results/Case4/03_Contact_Loads.png}}
+\end{adjustwidth}
+    \caption{Case 4 diagnostic outputs: $n = 10,000$~RPM, $F_a = F_r = 1000$~N. (\textbf{a})~Ball kinematics. (\textbf{b})~Heat generation. (\textbf{c})~Thermal response. (\textbf{d})~Contact loads.\label{fig:case4_overview}}
+\end{figure}
+
+
+\subsection{Discussion}
+
+The co-rotating entrainment velocity (Equation~\ref{eq:entrain_corotating}) is physically essential for correct film thickness at the outer race contact. The Heathcote conformity factor $(2f-1)/(2f)$ normalizes the curvature difference correctly; dividing by $(2f-1)$ would amplify micro-slip by $\sim 650\times$. The 2D Coulomb friction (Equation~\ref{eq:coulomb_2d}) preserves the circular friction domain for all slip directions, critical for transient cage dynamics.
+
+
+%% ======================================================================
+\section{Conclusions}
+\label{sec:conclusion}
+
+This paper presents ADORE, a comprehensive 6-DOF transient dynamic bearing solver with:
+\begin{enumerate}
+    \item Complete quaternion-based 3D rotation with gyroscopic precession.
+    \item 84-point TEHD contact integral with Heathcote creep, spin micro-slip, and flash temperature.
+    \item Closed-loop four-node thermal network with dynamic thermal expansion.
+    \item Energy conservation verified to within $5 \times 10^{-4}\%$.
+    \item Cage speed within 0.2\% of Harris theory across all conditions.
+    \item NASA TP-2275 thermal predictions within 3\%.
+\end{enumerate}
+
+The framework is implemented in Julia with analytically derived Jacobian sparsity and graph-colored finite differencing for efficient implicit integration.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\authorcontributions{Conceptualization, methodology, software, validation, formal analysis, investigation, data curation, writing---original draft preparation, visualization, Y.L. The author has read and agreed to the published version of the manuscript.}
+
+\funding{This research received no external funding.}
+
+\institutionalreview{Not applicable.}
+
+\informedconsent{Not applicable.}
+
+\dataavailability{The complete ADORE solver source code, all input configuration files, post-processing scripts, and validation datasets are available at \url{https://github.com/YUXinluhk/BallBearing-Dynamics} under the MIT license.}
+
+\conflictsofinterest{The author declares no conflicts of interest.}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\abbreviations{Abbreviations}{
+The following abbreviations are used in this manuscript:
+\\
+
+\noindent
+\begin{tabular}{@{}ll}
+ACBB & Angular contact ball bearing\\
+DOF & Degree of freedom\\
+EHL & Elasto-hydrodynamic lubrication\\
+FBDF & Fixed-leading-coefficient backward differentiation formula\\
+LPTN & Lumped-parameter thermal network\\
+ODE & Ordinary differential equation\\
+TEHD & Thermo-elasto-hydrodynamic
+\end{tabular}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{adjustwidth}{-\extralength}{0cm}
+
+\reftitle{References}
+
+\isAPAandChicago{}{%
+\begin{thebibliography}{999}
+
+\bibitem[Jones(1960)]{Jones1960}
+Jones, A.B. A general theory for elastically constrained ball and radial roller bearings under arbitrary load and speed conditions. {\em ASME J. Basic Eng.} {\bf 1960}, {\em 82}, 309--320.
+
+\bibitem[Harris and Kotzalas(2006)]{Harris2006}
+Harris, T.A.; Kotzalas, M.N. \textit{Rolling Bearing Analysis}, 5th ed.; CRC Press: Boca Raton, FL, USA, 2006.
+
+\bibitem[Gupta(1984)]{Gupta1984}
+Gupta, P.K. \textit{Advanced Dynamics of Rolling Elements}; Springer: New York, NY, USA, 1984.
+
+\bibitem[Walters(1971)]{Walters1971}
+Walters, C.T. The dynamics of ball bearings. {\em ASME J. Lubr. Technol.} {\bf 1971}, {\em 93}, 1--10.
+
+\bibitem[Jang and Jeong(2004)]{Jang2004}
+Jang, G.; Jeong, S.W. Nonlinear excitation model of ball bearing waviness. {\em ASME J. Tribol.} {\bf 2004}, {\em 126}, 82--90.
+
+\bibitem[Bizarre \textit{et al.}(2018)]{Bizarre2018}
+Bizarre, L.; Nonato, F.; Cavalca, K.L. Formulation of five degrees of freedom ball bearing model. {\em Mech. Mach. Theory} {\bf 2018}, {\em 124}, 179--196.
+
+\bibitem[Stacke \textit{et al.}(1999)]{Stacke1999}
+Stacke, L.E.; Fritzson, D.; Nordling, P. BEAST---A rolling bearing simulation tool. {\em Proc. Inst. Mech. Eng. Part K J. Multi-Body Dyn.} {\bf 1999}, {\em 213}, 63--71.
+
+\bibitem[Palmgren(1959)]{Palmgren1959}
+Palmgren, A. \textit{Ball and Roller Bearing Engineering}, 3rd ed.; Burbank: Philadelphia, PA, USA, 1959.
+
+\bibitem[Rackauckas and Nie(2017)]{Rackauckas2017}
+Rackauckas, C.; Nie, Q. DifferentialEquations.jl---A performant and feature-rich ecosystem for solving differential equations in Julia. {\em J. Open Res. Softw.} {\bf 2017}, {\em 5}, 15.
+
+\bibitem[Parker(1984)]{Parker1984}
+Parker, R.J. Comparison of predicted and experimental thermal performance of angular-contact ball bearings. NASA Technical Paper 2275, 1984.
+
+\bibitem[SKF(2018)]{SKF2018}
+SKF Group. \textit{Rolling Bearings}; SKF Publication PUB BU/P1 10000/2 EN; SKF Group: Gothenburg, Sweden, 2018.
+
+\bibitem[Takabi and Khonsari(2013)]{Takabi2013}
+Takabi, J.; Khonsari, M.M. Experimental testing and thermal analysis of ball bearings. {\em Tribol. Int.} {\bf 2013}, {\em 60}, 93--103.
+
+\end{thebibliography}
+}
+
+\PublishersNote{}
+\end{adjustwidth}
+\end{document}

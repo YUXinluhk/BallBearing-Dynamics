@@ -20,13 +20,15 @@ Elastic material properties for contacting bodies.
 Base.@kwdef struct MaterialParams
     E::Float64     # Young's modulus [Pa]
     nu::Float64    # Poisson's ratio [-]
+    effusivity::Float64 = 12000.0  # Thermal effusivity [W·s^0.5/(m^2·K)]
 
-    function MaterialParams(E, nu)
+    function MaterialParams(E, nu, effusivity=12000.0)
         check_positive("E (Young's modulus)", E, "MaterialParams")
         check_range("nu (Poisson's ratio)", nu, 0.0, 0.5, "MaterialParams";
             inclusive=:neither)
         warn_range("E (Young's modulus)", E, 1e9, 1e12, "MaterialParams")
-        new(E, nu)
+        check_positive("effusivity", effusivity, "MaterialParams")
+        new(E, nu, effusivity)
     end
 end
 
@@ -91,11 +93,33 @@ r_ball(g::BearingGeometry) = g.d / 2
 r_i(g::BearingGeometry) = g.f_i * g.d
 r_o(g::BearingGeometry) = g.f_o * g.d
 
-"Inner race groove center diameter: D_i = d_m + (2f_i - 1)·d·cos(α₀)"
-D_i(g::BearingGeometry) = g.d_m + (2g.f_i - 1) * g.d * cos(g.alpha_0)
+"""
+    alpha_free(g::BearingGeometry)
 
-"Outer race groove center diameter: D_o = d_m - (2f_o - 1)·d·cos(α₀)"
-D_o(g::BearingGeometry) = g.d_m - (2g.f_o - 1) * g.d * cos(g.alpha_0)
+Free contact angle accounting for *additional* diametral clearance P_d.
+Harris §7.2 adapted for angular-contact bearings where α₀ is the
+designed contact angle at zero additional clearance:
+
+    cos(α_f) = cos(α₀) - P_d / (2·B_D)
+
+where B_D = (f_i - 0.5)·d + (f_o - 0.5)·d.
+When P_d = 0, returns α₀.  α_f increases monotonically with P_d.
+"""
+function alpha_free(g::BearingGeometry)
+    if g.P_d <= 0.0
+        return g.alpha_0
+    end
+    B_D = (g.f_i - 0.5) * g.d + (g.f_o - 0.5) * g.d
+    cos_af = cos(g.alpha_0) - g.P_d / (2.0 * B_D)
+    cos_af = clamp(cos_af, -1.0, 1.0)  # guard
+    return acos(cos_af)
+end
+
+"Inner race groove center diameter: D_i = d_m + (2f_i - 1)·d·cos(α_f)"
+D_i(g::BearingGeometry) = g.d_m + (2g.f_i - 1) * g.d * cos(alpha_free(g))
+
+"Outer race groove center diameter: D_o = d_m - (2f_o - 1)·d·cos(α_f)"
+D_o(g::BearingGeometry) = g.d_m - (2g.f_o - 1) * g.d * cos(alpha_free(g))
 
 "Ball mass [kg] — solid sphere"
 ball_mass(g::BearingGeometry) = g.rho_ball * (4 / 3) * π * r_ball(g)^3
@@ -117,7 +141,7 @@ ball_spacing(g::BearingGeometry) = 2π / g.n_balls
 
 "Σρ̄ for ball/inner-race contact"
 function sum_rho_inner(g::BearingGeometry)
-    cos_a = cos(g.alpha_0)
+    cos_a = cos(alpha_free(g))
     ρ_ball = 2.0 / g.d
     ρ_ir_roll = 2.0 * cos_a / (g.d_m - g.d * cos_a)
     ρ_ir_cross = -1.0 / r_i(g)
@@ -126,7 +150,7 @@ end
 
 "Σρ̄ for ball/outer-race contact"
 function sum_rho_outer(g::BearingGeometry)
-    cos_a = cos(g.alpha_0)
+    cos_a = cos(alpha_free(g))
     ρ_ball = 2.0 / g.d
     ρ_or_roll = -2.0 * cos_a / (g.d_m + g.d * cos_a)
     ρ_or_cross = -1.0 / r_o(g)
@@ -135,7 +159,7 @@ end
 
 "Curvature difference F(ρ) for ball/inner contact"
 function F_rho_inner(g::BearingGeometry)
-    cos_a = cos(g.alpha_0)
+    cos_a = cos(alpha_free(g))
     ρ_ir_roll = 2.0 * cos_a / (g.d_m - g.d * cos_a)
     ρ_ir_cross = -1.0 / r_i(g)
     sr = sum_rho_inner(g)
@@ -145,7 +169,7 @@ end
 
 "Curvature difference F(ρ) for ball/outer contact"
 function F_rho_outer(g::BearingGeometry)
-    cos_a = cos(g.alpha_0)
+    cos_a = cos(alpha_free(g))
     ρ_or_roll = -2.0 * cos_a / (g.d_m + g.d * cos_a)
     ρ_or_cross = -1.0 / r_o(g)
     sr = sum_rho_outer(g)
@@ -516,6 +540,7 @@ Base.@kwdef struct SimulationConfig
     t_end::Float64 = 0.01
     dt_output::Float64 = 1e-5
     inner_race_speed::Float64 = 0.0     # [rad/s]
+    outer_race_speed::Float64 = 0.0     # [rad/s]
     F_axial::Float64 = 0.0              # [N]
     F_radial::Float64 = 0.0             # [N]
     t_ramp_end::Float64 = 0.0           # [s]
@@ -527,7 +552,7 @@ Base.@kwdef struct SimulationConfig
     churning::ChurningParams = ChurningParams()
     thermal::ThermalParams = ThermalParams()
 
-    function SimulationConfig(t_end, dt_output, inner_race_speed, F_axial, F_radial,
+    function SimulationConfig(t_end, dt_output, inner_race_speed, outer_race_speed, F_axial, F_radial,
         t_ramp_end, mu_spin, c_structural, zeta,
         delta_r_thermal, integrator, churning, thermal)
         check_positive("t_end", t_end, "SimulationConfig")
@@ -535,7 +560,7 @@ Base.@kwdef struct SimulationConfig
             "dt_output ($dt_output) must be < t_end ($t_end)"))
         check_non_negative("inner_race_speed", inner_race_speed, "SimulationConfig")
         check_range("zeta", zeta, 0.0, 1.0, "SimulationConfig")
-        new(t_end, dt_output, inner_race_speed, F_axial, F_radial,
+        new(t_end, dt_output, inner_race_speed, outer_race_speed, F_axial, F_radial,
             t_ramp_end, mu_spin, c_structural, zeta, delta_r_thermal,
             integrator, churning, thermal)
     end

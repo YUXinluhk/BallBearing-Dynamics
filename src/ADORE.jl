@@ -61,7 +61,7 @@ include("Transforms/frames.jl")
 
 export QUAT_IDENTITY, quat_derivative, rotate_vector, inv_rotate_vector
 export quat_to_rotmat, quat_renormalize, quat_from_euler_zyx
-export omega_body_from_euler, quat_from_components
+export omega_body_from_euler, quat_from_components, kinematics_quat_derivative_baumgarte
 export T_azimuth, T_ac, contact_angles_from_direction
 export inertial_from_cylindrical, velocity_inertial_from_cylindrical
 

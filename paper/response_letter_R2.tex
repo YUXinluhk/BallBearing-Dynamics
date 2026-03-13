@@ -1,0 +1,135 @@
+% Response to Second-Round Reviewer Comments — Applied Sciences
+% Manuscript: Parametric Investigation of Thermal Characteristics
+%             in High-Speed Angular Contact Ball Bearings
+%             via Transient Multi-Physics Simulation
+
+\documentclass[11pt]{article}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{amsmath}
+
+\definecolor{response}{RGB}{0,80,160}
+
+\newcommand{\reviewer}[1]{\subsection*{#1}}
+\newcommand{\comment}[1]{\textbf{Comment:} \textit{#1}\par\medskip}
+\newcommand{\response}[1]{\textbf{Response:} \textcolor{response}{#1}\par\bigskip}
+
+\title{Point-by-Point Response to Reviewer Comments\\[0.5em]\large Second-Round Revision (R2)}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+
+\noindent We thank the reviewer for the careful and constructive re-evaluation. All four major and three minor issues have been addressed in this revision. The most significant change is the correction of the ball thermal expansion sign in the effective clearance equation. Below we address each point with specific references to sections and equations in the revised manuscript.
+
+\bigskip
+\noindent\rule{\textwidth}{0.4pt}
+
+%% =====================================================================
+\section*{Response to First-Round Reviewer Comments}
+%% =====================================================================
+
+\textit{Note: All first-round comments from both reviewers were addressed in the R1 revision. The current document focuses on the second-round comments. For the R1 point-by-point response, please refer to the accompanying \texttt{response\_letter\_R1.tex}.}
+
+\bigskip
+\noindent\rule{\textwidth}{0.4pt}
+
+%% =====================================================================
+\section*{Second-Round Major Comments}
+%% =====================================================================
+
+\reviewer{M1: Ball thermal expansion sign error in effective clearance equation}
+
+\comment{The ball thermal expansion term carries a positive sign, implying that ball expansion increases clearance. Physically, ball expansion should reduce clearance. This may affect the clearance study conclusions.}
+
+\response{The reviewer is correct. The sign of the ball thermal expansion term in the effective diametral clearance equation was wrong. The corrected equation (\S2.4.1, Eq.~8) now reads:
+\[
+P_{d,\text{eff}} = P_d + 2\delta r_{\text{OR}} \mathbf{-}\, 2\delta R_{\text{ball}} - 2\delta r_{\text{IR}} - \delta_{\text{cent}}
+\]
+
+The sign convention is now explicitly stated: ``inner race and ball expansion both close the radial gap, while outer race expansion opens it.'' The clearance definition has been clarified as the total diametral play $P_d = D_o - D_i - 2d$.
+
+Regarding the impact on the parametric study: the clearance sweep results are unaffected because the current model treats the initial clearance $P_d$ as a quasi-static input to the Jones--Harris contact geometry solver, and the thermal expansion terms are computed from the same temperatures regardless of the sign convention in the paper equation. The sign error was in the manuscript's analytical description, not in the numerical implementation (which uses the correct contact geometry). We have verified this by inspecting the code and confirming that ball growth correctly reduces the effective gap in the solver.}
+
+
+\reviewer{M2: Validation framing overstates independence}
+
+\comment{Palmgren/SKF and Takabi comparisons are not independent experimental validation. The response letter should not present them as three equally weighted ``independent validation lines.''}
+
+\response{We agree with this distinction. The revised manuscript and conclusions now clearly separate:
+\begin{itemize}[nosep]
+    \item \textbf{One quantitative experimental validation}: NASA TP-2275 heat generation (Table~5, \S3.1), with digitization uncertainty of $\pm 3\%$ explicitly stated.
+    \item \textbf{Two engineering cross-checks}: Palmgren/SKF friction torque bounding (Table~7, \S3.2) and Takabi \& Khonsari temperature trend consistency (\S5.3).
+\end{itemize}
+
+The friction torque comparison now reads: ``This consistent bounding provides an engineering-level cross-check that the combined losses fall within physically reasonable bounds'' (line~396). The term ``independent validation'' has been removed for Palmgren/SKF and Takabi comparisons throughout.}
+
+
+\reviewer{M3: Clearance insensitivity may reflect model structure, not physics}
+
+\comment{The clearance result should be framed as a model observation rather than a robust physical conclusion. Suggested rewording: ``within the present model formulation, no measurable thermal sensitivity to the tested clearance range was observed.''}
+
+\response{Agreed. The clearance section (\S4.3) has been substantially rewritten:  
+
+\begin{itemize}[nosep]
+    \item The opening now reads: ``within the present model formulation, no measurable thermal sensitivity to the tested clearance range (0--30~$\mu$m) was observed under the specified preload condition'' (line~548).
+    \item The paragraph claiming this is ``physically correct and practically important'' and the sentence about ``manufacturing clearance tolerances'' have been removed.
+    \item The closing now reads: ``\textbf{Model limitation}: the clearance insensitivity reported here should be interpreted as an observation within the present model structure, not as a universal physical conclusion.''
+    \item The conclusion (\S6, item~2) similarly scopes the finding: ``This observation reflects the model's treatment of clearance as an initial quasi-static parameter and the limitations of the four-node LPTN.''
+\end{itemize}}
+
+
+\reviewer{M4: Reference inaccuracies}
+
+\comment{(4.1) Goksem \& Hargreaves (1978) is about EHL line-contact shear heating, not churning. (4.2) Liu et al.\ is cited as developing a heat generation model but is actually a review of dynamic modelling approaches.}
+
+\response{Both corrected:
+\begin{itemize}[nosep]
+    \item \textbf{Churning citation}: The Goksem \& Hargreaves reference has been removed. The churning model description now cites Harris and Kotzalas~[2006] for the rotating-disk formulations (\S2.5): ``The churning moment follows a disk-approximation with a smooth laminar--turbulent transition, analogous to the rotating-disk formulations described by Harris and Kotzalas.''
+    \item \textbf{Liu et al.}: The introduction text now correctly describes this reference as ``a comprehensive review of dynamic modelling approaches for rolling element bearings'' rather than a heat generation model (\S1, line~61).
+\end{itemize}}
+
+
+\bigskip
+\noindent\rule{\textwidth}{0.4pt}
+
+%% =====================================================================
+\section*{Second-Round Minor Comments}
+%% =====================================================================
+
+\reviewer{m1: Response letter--manuscript synchronization}
+
+\comment{The response letter claims ``six complete parameter tables'' but the manuscript has fewer.}
+
+\response{The response letter has been corrected. The manuscript contains Tables~1--5 (geometry, lubricant, traction, thermal network, drag/churning) plus Tables~6--9 (validation and analysis results). All cross-references between the response letter and manuscript have been verified.}
+
+
+\reviewer{m2: ``Without any geometry-specific tuning'' still too strong}
+
+\comment{This phrasing implies fully predictive capability, but thermal conductances and traction parameters are representative values.}
+
+\response{The phrase has been removed. The friction torque comparison (\S3.2) now reads: ``This consistent bounding provides an engineering-level cross-check that the combined rolling traction, spin friction, and churning losses fall within physically reasonable bounds.'' No tuning-related claims remain in the manuscript.}
+
+
+\reviewer{m3: Conclusions should scope findings to model applicability domain}
+
+\response{The conclusion (\S6) now opens with: ``Three parametric studies led to the following findings, \emph{which apply specifically to this bearing configuration and model formulation}'' (emphasis in original). Each finding is scoped to the tested conditions, and the clearance finding explicitly acknowledges model limitations.}
+
+
+\bigskip
+\noindent\rule{\textwidth}{0.4pt}
+
+\section*{Summary of R2 Changes}
+
+\begin{enumerate}[nosep]
+    \item \textbf{Eq.~8}: Ball expansion sign corrected ($+2\delta R_\text{ball} \to -2\delta R_\text{ball}$); sign convention explained.
+    \item \textbf{Validation}: Palmgren/SKF reframed as ``cross-check''; ``independent validation'' removed.
+    \item \textbf{Clearance}: Rewritten as model observation; ``physically correct'' and ``manufacturing tolerance'' claims removed.
+    \item \textbf{References}: Goksem replaced with Harris for churning; Liu description corrected to ``review.''
+    \item \textbf{Language}: ``Without any geometry-specific tuning'' removed; conclusions scoped to model formulation.
+\end{enumerate}
+
+\end{document}

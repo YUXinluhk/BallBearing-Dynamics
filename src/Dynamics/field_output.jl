@@ -84,6 +84,8 @@ function field_output_kernel(t::Float64, u::AbstractVector, p::Vector{Float64})
     W_scale = p[P_W_SCALE]
     L_scale = p[P_L_SCALE]
     Q_scale = p[P_Q_SCALE]
+    d_dim = D_star * L_scale
+    d_m_dim = d_m_star * L_scale
 
     ramp = p[P_T_RAMP] > 0 ? 0.5 * (1.0 - cos(π * min(t / p[P_T_RAMP], 1.0))) : 1.0
     ω_ir = p[P_OMEGA_IR] * ramp
@@ -155,27 +157,67 @@ function field_output_kernel(t::Float64, u::AbstractVector, p::Vector{Float64})
         nfi_x, nfi_r = dx_i / L_i, dr_i / L_i
         nfo_x, nfo_r = dx_o / L_o, dr_o / L_o
 
+        cos_α_i = clamp(abs(nfi_r), 1e-4, 0.9999)
+        cos_α_o = clamp(abs(nfo_r), 1e-4, 0.9999)
+        Y_i_dim_rt, a_i_rt, b_i_rt, Σρ_i_dim_rt, E2_i_rt =
+            hertz_runtime_contact(cos_α_i, d_dim, d_m_dim, f_i_geom, composite_E_prime, true)
+        Y_o_dim_rt, a_o_rt, b_o_rt, Σρ_o_dim_rt, E2_o_rt =
+            hertz_runtime_contact(cos_α_o, d_dim, d_m_dim, f_o_geom, composite_E_prime, false)
+
+        Y_i_eff = Y_i_dim_rt > 0.0 ? Y_i_dim_rt * L_scale^1.5 / Q_scale : Y_i
+        Y_o_eff = Y_o_dim_rt > 0.0 ? Y_o_dim_rt * L_scale^1.5 / Q_scale : Y_o
+        a_i_eff = Y_i_dim_rt > 0.0 ? a_i_rt : a_i_s
+        b_i_eff = Y_i_dim_rt > 0.0 ? b_i_rt : b_i_s
+        a_o_eff = Y_o_dim_rt > 0.0 ? a_o_rt : a_o_s
+        b_o_eff = Y_o_dim_rt > 0.0 ? b_o_rt : b_o_s
+        Σρ_i_eff = Σρ_i_dim_rt > 1e-20 ? Σρ_i_dim_rt * L_scale : Σρ_i
+        Σρ_o_eff = Σρ_o_dim_rt > 1e-20 ? Σρ_o_dim_rt * L_scale : Σρ_o
+
         # Smooth Hertz penetration (同 kernel.jl smooth_hertz_delta 等价连续形式)
         δ_i_sm = 0.5 * (L_i - drb_i + sqrt((L_i - drb_i)^2 + 1e-24))
         δ_o_sm = 0.5 * (L_o - drb_o + sqrt((L_o - drb_o)^2 + 1e-24))
-        Q_i = Y_i * δ_i_sm * sqrt(δ_i_sm)
-        Q_o = Y_o * δ_o_sm * sqrt(δ_o_sm)
+        Q_i = Y_i_eff * δ_i_sm * sqrt(δ_i_sm)
+        Q_o = Y_o_eff * δ_o_sm * sqrt(δ_o_sm)
 
         α_i = atan(dx_i, dr_i + 1e-30)
         α_o = atan(dx_o, -(dr_o) + 1e-30)
-        c_i = Σρ_i > 1e-20 ? cbrt(3Q_i / (2 * p[P_E_PRIME] * Σρ_i)) : 0.0
-        a_i_dim, b_i_dim = a_i_s * c_i * L_scale, b_i_s * c_i * L_scale
-        c_o = Σρ_o > 1e-20 ? cbrt(3Q_o / (2 * p[P_E_PRIME] * Σρ_o)) : 0.0
-        a_o_dim, b_o_dim = a_o_s * c_o * L_scale, b_o_s * c_o * L_scale
+        c_i = Σρ_i_eff > 1e-20 ? cbrt(3Q_i / (2 * p[P_E_PRIME] * Σρ_i_eff)) : 0.0
+        a_i_dim, b_i_dim = a_i_eff * c_i * L_scale, b_i_eff * c_i * L_scale
+        c_o = Σρ_o_eff > 1e-20 ? cbrt(3Q_o / (2 * p[P_E_PRIME] * Σρ_o_eff)) : 0.0
+        a_o_dim, b_o_dim = a_o_eff * c_o * L_scale, b_o_eff * c_o * L_scale
 
         R_ball_k = R_ball_k_global  # includes ball thermal expansion
         r_contact_i = r_b - R_ball_k * nfi_r
         x_contact_i = x_b - R_ball_k * nfi_x
+        r_contact_o = r_b - R_ball_k * nfo_r
+        x_contact_o = x_b - R_ball_k * nfo_x
 
-        # 【核心修复2】与 kernel.jl 完全一致的接触点线速度公式
-        # 内圈在接触点的动态挤压线速度 (包含倾覆振动产生的速度)
-        v_ir_θ = r_contact_i * ω_ir + γ̇y_ir * (x_contact_i - x_ir) * sθ - γ̇z_ir * (x_contact_i - x_ir) * cθ - ẏ_ir * cθ - ż_ir * sθ
         v_ball_θ = r_b * θ̇_b
+        e_x = SVector{3,Float64}(1.0, 0.0, 0.0)
+        e_r = SVector{3,Float64}(0.0, -sθ, cθ)
+        e_θ = SVector{3,Float64}(0.0, -cθ, -sθ)
+        n_i_global = nfi_x * e_x + nfi_r * e_r
+        n_o_global = nfo_x * e_x + nfo_r * e_r
+        t_lat_i_global = (-nfi_r) * e_x + nfi_x * e_r
+        t_lat_o_global = (-nfo_r) * e_x + nfo_x * e_r
+
+        wx = ω_orb_x
+        wy = -ω_orb_r * sθ - ω_orb_θ * cθ
+        wz = ω_orb_r * cθ - ω_orb_θ * sθ
+        ω_ball_global = SVector{3,Float64}(wx, wy, wz)
+        v_ball_center_global = ẋ_b * e_x + ṙ_b * e_r + v_ball_θ * e_θ
+        v_ball_cp_i_global = v_ball_center_global + cross(ω_ball_global, -R_ball_k * n_i_global)
+        v_ball_cp_o_global = v_ball_center_global + cross(ω_ball_global, -R_ball_k * n_o_global)
+
+        y_contact_i = -r_contact_i * sθ
+        z_contact_i = r_contact_i * cθ
+        arm_ir_global = SVector{3,Float64}(x_contact_i - x_ir, y_contact_i - y_ir, z_contact_i - z_ir)
+        v_ir_center_global = SVector{3,Float64}(ẋ_ir, ẏ_ir, ż_ir)
+        ω_ir_global = SVector{3,Float64}(ω_ir, γ̇y_ir, γ̇z_ir)
+        v_ir_cp_global = v_ir_center_global + cross(ω_ir_global, arm_ir_global)
+        rel_i_global = v_ir_cp_global - v_ball_cp_i_global
+        rel_o_global = -v_ball_cp_o_global
+        v_ir_θ = dot(v_ir_cp_global, e_θ)
         u_mean_i = 0.5 * (v_ir_θ + v_ball_θ) + 1e-30
         u_mean_o = 0.5 * v_ball_θ + 1e-30
 
@@ -186,16 +228,19 @@ function field_output_kernel(t::Float64, u::AbstractVector, p::Vector{Float64})
         ω_roll_i = ω_orb_x * nfi_r - ω_orb_r * nfi_x
         ω_roll_o = ω_orb_x * nfo_r - ω_orb_r * nfo_x
 
-        v_ball_surface_i = v_ball_θ - R_ball_k * ω_roll_i
-        v_ball_surface_o = v_ball_θ - R_ball_k * ω_roll_o
+        v_ball_surface_i = dot(v_ball_cp_i_global, e_θ)
+        v_ball_surface_o = dot(v_ball_cp_o_global, e_θ)
 
         v_ir_θ_dim = v_ir_θ * V_scale
         # 【Bug8修复】保留有符号滑移速度，维持伽利略对称性
-        u_slide_i_dim = v_ir_θ_dim - v_ball_surface_i * V_scale
-        u_slide_o_dim = -v_ball_surface_o * V_scale
+        u_slide_i_dim = dot(rel_i_global, e_θ) * V_scale
+        u_slide_o_dim = dot(rel_o_global, e_θ) * V_scale
+        u_side_i_dim = dot(rel_i_global, t_lat_i_global) * V_scale
+        u_side_o_dim = dot(rel_o_global, t_lat_o_global) * V_scale
 
         # 自旋速度投影 (同 kernel.jl)
-        ω_spin_i_dim = ω_ir_dim_val * nfi_x - (ω_orb_x * nfi_x + ω_orb_r * nfi_r) * W_scale
+        ω_ir_spin_dim = ω_ir_dim_val * nfi_x + (-γ̇y_ir * sθ + γ̇z_ir * cθ) * W_scale * nfi_r
+        ω_spin_i_dim = ω_ir_spin_dim - (ω_orb_x * nfi_x + ω_orb_r * nfi_r) * W_scale
         ω_spin_o_dim = 0.0 - (ω_orb_x * nfo_x + ω_orb_r * nfo_r) * W_scale
 
         v_surface_i_θ = v_ball_surface_i * V_scale
@@ -206,9 +251,8 @@ function field_output_kernel(t::Float64, u::AbstractVector, p::Vector{Float64})
         E_prime_dim = 2.0 * composite_E_prime  # Hamrock-Dowson: E' = 2E*
 
         # 【Bug1修复】EHL卷吸速度：接触点共转参考系
-        r_contact_o_fo = r_b - R_ball_k * nfo_r
         v_cp_i_dim_fo = r_contact_i * θ̇_b * V_scale
-        v_cp_o_dim_fo = r_contact_o_fo * θ̇_b * V_scale
+        v_cp_o_dim_fo = r_contact_o * θ̇_b * V_scale
         u_entrain_i = abs(0.5 * (v_ir_θ_dim + v_surface_i_θ) - v_cp_i_dim_fo)
         u_entrain_o = abs(0.5 * (0.0 + v_surface_o_θ) - v_cp_o_dim_fo)
 
@@ -220,24 +264,28 @@ function field_output_kernel(t::Float64, u::AbstractVector, p::Vector{Float64})
         h_film_o = _film_thickness_hd(u_entrain_o, Q_o_dim, E_prime_dim, R_eff,
             (b_o_dim > 0 ? a_o_dim / b_o_dim : 1.0), μ_oil_dyn, lub_alpha_pv, lub_K_th, T_oil_t)
 
-        # 【核心修复4】使用 TEHD 牵引系数 (完全镜像 kernel.jl，非旧的基础 traction_coefficient)
         P_mean_i = Q_i_dim > 0 ? Q_i_dim / (π * a_i_dim * b_i_dim + 1e-16) : 0.0
         P_mean_o = Q_o_dim > 0 ? Q_o_dim / (π * a_o_dim * b_o_dim + 1e-16) : 0.0
-        κ_i = tehd_traction_coefficient(u_slide_i_dim, P_mean_i, b_i_dim, u_entrain_i, trac_A, trac_B, trac_C, trac_D, Λ_LSS, β_temp)
-        κ_o = tehd_traction_coefficient(u_slide_o_dim, P_mean_o, b_o_dim, u_entrain_o, trac_A, trac_B, trac_C, trac_D, Λ_LSS, β_temp)
+        ω_roll_abs = sqrt(ω_orb_x^2 + ω_orb_r^2 + ω_orb_θ^2 + 1e-16) * W_scale
+        F_trac_i_dim, F_side_i_dim, H_slide_i, H_spin_i = integrate_tehd_contact_force(
+            u_slide_i_dim, u_side_i_dim, P_mean_i, a_i_dim, b_i_dim, u_entrain_i,
+            ω_spin_i_dim, ω_roll_abs, R_ball_dim, f_i_geom,
+            trac_A, trac_B, trac_C, trac_D, Λ_LSS, β_temp, 12000.0;
+            flash_length=b_i_dim,
+        )
+        F_trac_o_dim, F_side_o_dim, H_slide_o, H_spin_o = integrate_tehd_contact_force(
+            u_slide_o_dim, u_side_o_dim, P_mean_o, a_o_dim, b_o_dim, u_entrain_o,
+            ω_spin_o_dim, ω_roll_abs, R_ball_dim, f_o_geom,
+            trac_A, trac_B, trac_C, trac_D, Λ_LSS, β_temp, 12000.0;
+            flash_length=0.5 * a_o_dim,
+        )
+        κ_i = Q_i_dim > 1e-16 ? hypot(F_trac_i_dim, F_side_i_dim) / Q_i_dim : 0.0
+        κ_o = Q_o_dim > 1e-16 ? hypot(F_trac_o_dim, F_side_o_dim) / Q_o_dim : 0.0
 
-        v_roll_nominal = abs(ω_ir_dim_val) * d_m_star * L_scale * 0.5
-        entrain_factor = v_roll_nominal^2 / (v_roll_nominal^2 + 0.01)
-        κ_i *= entrain_factor
-        κ_o *= entrain_factor
-
-        # (Stribeck 分载已移除，与 kernel.jl 完全镜像)
-
-        F_trac_i_dim = κ_i * Q_i_dim
-        F_trac_o_dim = κ_o * Q_o_dim
-
-        M_sp_i_dim = spin_moment(ω_spin_i_dim, Q_i_dim, a_i_dim, b_i_dim, μ_spin, p[P_E2_I])
-        M_sp_o_dim = spin_moment(ω_spin_o_dim, Q_o_dim, a_o_dim, b_o_dim, μ_spin, p[P_E2_O])
+        E2_i_eff = Y_i_dim_rt > 0.0 ? E2_i_rt : p[P_E2_I]
+        E2_o_eff = Y_o_dim_rt > 0.0 ? E2_o_rt : p[P_E2_O]
+        M_sp_i_dim = spin_moment(ω_spin_i_dim, Q_i_dim, a_i_dim, b_i_dim, μ_spin, E2_i_eff)
+        M_sp_o_dim = spin_moment(ω_spin_o_dim, Q_o_dim, a_o_dim, b_o_dim, μ_spin, E2_o_eff)
 
         # ── 3D 流体拖曳力 ──
         V_ball_dim = sqrt(ẋ_b^2 + (r_b * θ̇_b)^2 + ṙ_b^2) * V_scale
@@ -251,119 +299,6 @@ function field_output_kernel(t::Float64, u::AbstractVector, p::Vector{Float64})
         gap = r_b * Δθ
         pen = abs(gap) - p[P_POCKET_CLR]
         F_pk = pen > 0 ? p[P_K_POCKET] * pen * Q_scale : 0.0
-
-        # =============================================================
-        # 2D 接触椭圆热积分 (11×11 网格)
-        # Archard 闪温 + Nahme TEHD 热软化 + Bair-Winer 极限剪应力
-        # =============================================================
-        H_slide_i, H_slide_o = 0.0, 0.0
-        H_spin_i, H_spin_o = 0.0, 0.0
-
-        # [V6] 7-point Gauss-Legendre (u in [0,1]) and 12-point Fourier (θ in [0,2π]) mappings
-        nodes_u = (0.02544604382862075, 0.12923440720030275, 0.29707742431130140,
-            0.5, 0.70292257568869860, 0.87076559279969725, 0.97455395617137925)
-        weights_u = (0.06474248308443485, 0.13985269574463830, 0.19091502525255945,
-            0.20897959183673470, 0.19091502525255945, 0.13985269574463830, 0.06474248308443485)
-        N_theta = 12
-        dtheta = 2.0 * π / N_theta
-
-        ω_roll_abs = sqrt(ω_orb_x^2 + ω_orb_r^2 + ω_orb_θ^2 + 1e-16) * W_scale
-
-        # --- 内圈接触 84-点 积分 (V6) ---
-        if a_i_dim > 0 && b_i_dim > 0 && Q_i_dim > 0
-            p_max_i = 3.0 * Q_i_dim / (2.0 * π * a_i_dim * b_i_dim)
-            # 【Bug2修复】Heathcote共形系数：乘以 (2f-1)/(2f) 而非除以 (2f-1)
-            conf_factor_i = (2.0 * f_i_geom - 1.0) / (2.0 * f_i_geom)
-            u_roll_eff_i = sqrt(u_entrain_i^2 + 1e-6)
-            film_atten_i = 0.7 + 0.3 * (Q_i_dim > 0 && h_film_i > 0.0 ? exp(-0.6 * (h_film_i / 1e-7)^1.5) : 1.0)
-
-            for i_u in 1:7
-                u_nd = nodes_u[i_u]
-                wu = weights_u[i_u]
-                ρ_val = sqrt(1.0 - u_nd^2)
-                p_local = p_max_i * u_nd
-                τ_lim_eff = sqrt((Λ_LSS * p_local)^2 + 1e-24)
-
-                for i_theta in 1:N_theta
-                    θ = (i_theta - 0.5) * dtheta
-                    s_th, c_th = sincos(θ)
-                    x_c = a_i_dim * ρ_val * c_th
-                    y_c = b_i_dim * ρ_val * s_th
-
-                    u_heathcote = ω_roll_abs * (x_c^2 / (2.0 * R_ball_dim)) * conf_factor_i  # 【Bug2修复】
-                    v_micro_lat = -ω_spin_i_dim * y_c
-                    v_micro_roll = ω_spin_i_dim * x_c + u_heathcote
-
-                    v_lat = v_micro_lat
-                    v_roll = u_slide_i_dim + v_micro_roll  # 【Bug8修复】u_slide_i_dim已为有符号
-                    v_mag = sqrt(v_lat^2 + v_roll^2 + 1e-16)
-
-                    mu_local_iso = traction_coefficient(v_mag, trac_A, trac_B, trac_C, trac_D) * film_atten_i
-                    τ_iso = mu_local_iso * p_local
-                    τ_actual = τ_iso / hypot(1.0, τ_iso / τ_lim_eff)
-
-                    q_local = τ_actual * v_mag
-                    dT_flash = (1.11 * q_local * sqrt(b_i_dim)) / (12000.0 * sqrt(u_roll_eff_i))
-                    thermal_reduction = max(0.25, 1.0 / sqrt(1.0 + β_temp * dT_flash))
-
-                    τ_final = τ_actual * thermal_reduction
-                    dF = τ_final * (a_i_dim * b_i_dim * u_nd * wu * dtheta)
-                    dF_lat = v_mag > 1e-20 ? dF * (v_lat / v_mag) : 0.0
-                    dF_roll = v_mag > 1e-20 ? dF * (v_roll / v_mag) : 0.0
-
-                    H_slide_i += dF_roll * u_slide_i_dim  # 【Bug8修复】有符号自然积分
-                    H_spin_i += dF_lat * v_micro_lat + dF_roll * v_micro_roll
-                end
-            end
-        end
-
-        # --- 外圈接触 84-点 积分 (V6) ---
-        if a_o_dim > 0 && b_o_dim > 0 && Q_o_dim > 0
-            p_max_o = 3.0 * Q_o_dim / (2.0 * π * a_o_dim * b_o_dim)
-            # 【Bug2修复】Heathcote共形系数：乘以 (2f-1)/(2f) 而非除以 (2f-1)
-            conf_factor_o = (2.0 * f_o_geom - 1.0) / (2.0 * f_o_geom)
-            u_roll_eff_o = sqrt(u_entrain_o^2 + 1e-6)
-            film_atten_o = 0.7 + 0.3 * (Q_o_dim > 0 && h_film_o > 0.0 ? exp(-0.6 * (h_film_o / 1e-7)^1.5) : 1.0)
-
-            for i_u in 1:7
-                u_nd = nodes_u[i_u]
-                wu = weights_u[i_u]
-                ρ_val = sqrt(1.0 - u_nd^2)
-                p_local = p_max_o * u_nd
-                τ_lim_eff = sqrt((Λ_LSS * p_local)^2 + 1e-24)
-
-                for i_theta in 1:N_theta
-                    θ = (i_theta - 0.5) * dtheta
-                    s_th, c_th = sincos(θ)
-                    x_c = a_o_dim * ρ_val * c_th
-                    y_c = b_o_dim * ρ_val * s_th
-
-                    u_heathcote = ω_roll_abs * (x_c^2 / (2.0 * R_ball_dim)) * conf_factor_o  # 【Bug2修复】
-                    v_micro_lat = -ω_spin_o_dim * y_c
-                    v_micro_roll = ω_spin_o_dim * x_c + u_heathcote
-
-                    v_lat = v_micro_lat
-                    v_roll = u_slide_o_dim + v_micro_roll  # 【Bug8修复】u_slide_o_dim已为有符号
-                    v_mag = sqrt(v_lat^2 + v_roll^2 + 1e-16)
-
-                    mu_local_iso = traction_coefficient(v_mag, trac_A, trac_B, trac_C, trac_D) * film_atten_o
-                    τ_iso = mu_local_iso * p_local
-                    τ_actual = τ_iso / hypot(1.0, τ_iso / τ_lim_eff)
-
-                    q_local = τ_actual * v_mag
-                    dT_flash = (1.11 * q_local * sqrt(0.5 * a_o_dim)) / (12000.0 * sqrt(u_roll_eff_o))
-                    thermal_reduction = max(0.25, 1.0 / sqrt(1.0 + β_temp * dT_flash))
-
-                    τ_final = τ_actual * thermal_reduction
-                    dF = τ_final * (a_o_dim * b_o_dim * u_nd * wu * dtheta)
-                    dF_lat = v_mag > 1e-20 ? dF * (v_lat / v_mag) : 0.0
-                    dF_roll = v_mag > 1e-20 ? dF * (v_roll / v_mag) : 0.0
-
-                    H_slide_o += dF_roll * u_slide_o_dim  # 【Bug8修复】有符号自然积分
-                    H_spin_o += dF_lat * v_micro_lat + dF_roll * v_micro_roll
-                end
-            end
-        end
 
         # ── 拖曳热 [W] (流体粘性 + Goksem-Hargreaves EHL 滚动阻力) ──
         H_drag = F_d_dim * V_ball_dim

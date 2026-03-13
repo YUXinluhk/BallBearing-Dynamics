@@ -140,7 +140,7 @@ function init_state(geom::BearingGeometry, qs::QuasiStaticResult,
     D = geom.d
     f_i = geom.f_i
     f_o = geom.f_o
-    α₀ = geom.alpha_0
+    α₀ = alpha_free(geom)  # Use clearance-corrected free angle
     B_i = (f_i - 0.5) * D
     B_o = (f_o - 0.5) * D
 

@@ -1,0 +1,10 @@
+147: figures/thermal_network_schematic.pdf
+376: figures/heat_generation_comparison.png
+378: figures/heat_scaling_loglog.png
+512: figures/thermal_accel_validation.png
+524: figures/oilflow_temperature_sensitivity.png
+530: figures/oilflow_heat_generation.png
+546: figures/clearance_transient_overlay.png
+552: figures/clearance_steadystate.png
+572: figures/loadratio_temperature.png
+578: figures/loadratio_heat_breakdown.png

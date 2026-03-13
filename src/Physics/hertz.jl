@@ -102,6 +102,45 @@ function hertz_Y_and_ab(cos_alpha::Float64, d::Float64, d_m::Float64,
 end
 
 """
+    hertz_runtime_contact(cos_alpha, d, d_m, f, E_prime, is_inner)
+        → (Y, a_star, b_star, sum_rho, E2)
+
+Runtime Hertz contact constants for the instantaneous contact angle.
+Returns the complete elliptic integral `E2 = E(m)` so the Harris spin moment
+tracks the current contact ellipse instead of the free-angle preload geometry.
+"""
+function hertz_runtime_contact(cos_alpha::Float64, d::Float64, d_m::Float64,
+    f::Float64, E_prime::Float64, is_inner::Bool)
+    ca = clamp(cos_alpha, 1e-4, 0.9999)
+    ρ_ball = 2.0 / d
+
+    if is_inner
+        ρ_race_roll = 2.0 * ca / (d_m - d * ca)
+    else
+        ρ_race_roll = -2.0 * ca / (d_m + d * ca)
+    end
+    ρ_race_cross = -1.0 / (f * d)
+    Σρ = 2.0 * ρ_ball + ρ_race_roll + ρ_race_cross
+
+    Σρ < 1e-20 && return (0.0, 1.0, 1.0, Σρ, Float64(π) / 2)
+
+    F_ρ = min(abs(ρ_race_cross - ρ_race_roll) / Σρ, 0.9999)
+    κ, K_val, E_val = solve_kappa_bisection(F_ρ)
+
+    factor = π / (2.0 * κ^2 * E_val)
+    factor < 1e-30 && return (0.0, 1.0, 1.0, Σρ, E_val)
+
+    a_star = (2.0 * κ^2 * E_val / π)^(1 / 3)
+    b_star = (2.0 * E_val / (π * κ))^(1 / 3)
+    δ_star = (2.0 * K_val / π) * factor^(1 / 3)
+
+    δ_star < 1e-30 && return (0.0, a_star, b_star, Σρ, E_val)
+
+    Y = 4.0 * √2.0 * E_prime / (3.0 * √Σρ * δ_star^1.5)
+    return (Y, a_star, b_star, Σρ, E_val)
+end
+
+"""
     hertz_from_curvatures(sum_rho, F_rho, E_prime)
         → (κ, K_val, E_val, a★, b★, δ★, Y)
 
@@ -176,7 +215,7 @@ end
 
 C∞-smooth transition: δ_sm = ½(δ + √(δ² + ε²)) ≈ max(0, δ).
 """
-@inline function smooth_hertz_delta(δ; ε=1e-5)  # 【Bug7修复】ε^2=1e-10 survives Float64 at δ~1e-4
+@inline function smooth_hertz_delta(δ; ε=1e-11)
     return 0.5 * (δ + sqrt(δ^2 + ε^2))
 end
 

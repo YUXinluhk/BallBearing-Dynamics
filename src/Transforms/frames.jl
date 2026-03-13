@@ -25,27 +25,50 @@ end
     T_ac(α₁, α₂) → SMatrix{3,3}
 
 Rotation from azimuth plane to contact plane.
-α₁ = primary contact angle, α₂ = lateral tilt.
+Azimuth-plane basis ordering is `[x, θ, r]`.
+α₁ = primary axial-radial contact angle.
+α₂ = lateral tilt of the contact normal out of the x-r plane.
 """
 @inline function T_ac(α₁::Float64, α₂::Float64)
     s1, c1 = sincos(α₁)
     s2, c2 = sincos(α₂)
     @SMatrix [
-        s1*c2    s1*s2    c1;
-        s2       -c2      0.0;
-        -c1*c2   -c1*s2   s1
+        s1 * c2   s2    c1 * c2;
+        -s1 * s2  c2    -c1 * s2;
+        -c1       0.0   s1
     ]
 end
 
 """
-    contact_angles_from_direction(dx, dr) → (α₁, α₂)
+    contact_angles_from_direction(dx, dθ, dr) → (α₁, α₂)
 
-Given displacement from ball center to race groove center (axial dx, radial dr),
-compute primary contact angle α₁.
+Given the 3D displacement from ball center to race groove center expressed in the
+local azimuth basis `[x, θ, r]`, compute the primary contact angle `α₁` and the
+lateral tilt angle `α₂`.
 """
+@inline function contact_angles_from_direction(dx::Float64, dθ::Float64, dr::Float64)
+    α₁ = atan(dx, dr)
+    L = sqrt(dx^2 + dθ^2 + dr^2 + 1e-30)
+    α₂ = asin(clamp(dθ / L, -0.9999, 0.9999))
+    return (α₁, α₂)
+end
+
 @inline function contact_angles_from_direction(dx::Float64, dr::Float64)
-    α₁ = atan(dx, dr)   # atan2(axial, radial)
-    return (α₁, 0.0)     # α₂ = 0 for axial symmetry
+    return contact_angles_from_direction(dx, 0.0, dr)
+end
+
+"""
+    contact_basis_from_angles(α₁, α₂) → (n_ac, t_lat_ac, t_roll_ac)
+
+Return the orthonormal contact basis vectors in the local azimuth basis
+`[x, θ, r]`. These correspond to the rows of `T_ac(α₁, α₂)`.
+"""
+@inline function contact_basis_from_angles(α₁::Float64, α₂::Float64)
+    Tac = T_ac(α₁, α₂)
+    n_ac = SVector{3,Float64}(Tac[1, 1], Tac[1, 2], Tac[1, 3])
+    t_lat_ac = SVector{3,Float64}(Tac[2, 1], Tac[2, 2], Tac[2, 3])
+    t_roll_ac = SVector{3,Float64}(Tac[3, 1], Tac[3, 2], Tac[3, 3])
+    return (n_ac, t_lat_ac, t_roll_ac)
 end
 
 """

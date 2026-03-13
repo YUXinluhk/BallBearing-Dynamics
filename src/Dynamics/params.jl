@@ -100,8 +100,10 @@ const P_CTE = 84       # CTE [1/K] (dimensional)
 const P_T_REF = 85     # T_ref [K] for thermal expansion
 const P_OIL_FLOW_MDOT_CP = 86  # ṁ·cₚ [W/K] oil flow cooling coefficient (nondim)
 const P_T_OIL_INLET = 87       # T_oil_inlet [K] (dimensional)
+const P_EFFUSIVITY = 88        # effusivity [W·s^0.5/(m^2·K)] (dimensional)
+const P_OMEGA_OR = 89          # outer race speed [nondim]
 
-const N_PARAMS = 87
+const N_PARAMS = 89
 
 """
     build_params(geom, mat, lub, trac, cage, config, scales, h_inner, h_outer) → Vector{Float64}
@@ -121,12 +123,13 @@ function build_params(geom::BearingGeometry, mat::MaterialParams,
     p[P_DM] = nondim_length(s, geom.d_m)
     p[P_FI] = geom.f_i
     p[P_FO] = geom.f_o
-    p[P_ALPHA0] = geom.alpha_0
+    p[P_ALPHA0] = alpha_free(geom)  # Use clearance-corrected free angle
     p[P_NBALL] = Float64(geom.n_balls)
     p[P_MBALL] = nondim_mass(s, ball_mass(geom))
     p[P_JBALL] = nondim_inertia(s, ball_inertia(geom))
     p[P_MIR] = nondim_mass(s, inner_race_mass(geom))
     p[P_E_PRIME] = composite_modulus(mat, mat) / (s.Q / s.L^2)
+    p[P_EFFUSIVITY] = mat.effusivity
     p[P_YI] = nondim_stiffness(h_inner, s)
     p[P_YO] = nondim_stiffness(h_outer, s)
     p[P_AI] = h_inner.a_star
@@ -152,6 +155,7 @@ function build_params(geom::BearingGeometry, mat::MaterialParams,
     p[P_C_STRUCT] = config.c_structural / (s.Q * s.T / s.L)  # damping nondim
     p[P_ZETA] = config.zeta
     p[P_OMEGA_IR] = nondim_angvel(s, config.inner_race_speed)
+    p[P_OMEGA_OR] = nondim_angvel(s, config.outer_race_speed)
     p[P_FA] = nondim_force(s, config.F_axial)
     p[P_FR] = nondim_force(s, config.F_radial)
     p[P_T_RAMP] = nondim_time(s, config.t_ramp_end)
@@ -176,11 +180,12 @@ function build_params(geom::BearingGeometry, mat::MaterialParams,
     p[P_DRB_I] = nondim_length(s, (geom.f_i - 0.5) * geom.d)
     p[P_DRB_O] = nondim_length(s, (geom.f_o - 0.5) * geom.d)
     p[P_DELTA_R_TH] = nondim_length(s, config.delta_r_thermal)
-    # Groove center axial offsets (Harris §3.5): B·sin(α₀)
+    # Groove center axial offsets (Harris §3.5): B·sin(α_f)
     B_i = (geom.f_i - 0.5) * geom.d
     B_o = (geom.f_o - 0.5) * geom.d
-    p[P_X_GI0] = nondim_length(s, B_i * sin(geom.alpha_0))  # positive
-    p[P_X_GO0] = nondim_length(s, -B_o * sin(geom.alpha_0))  # negative
+    α_f = alpha_free(geom)
+    p[P_X_GI0] = nondim_length(s, B_i * sin(α_f))  # positive
+    p[P_X_GO0] = nondim_length(s, -B_o * sin(α_f))  # negative
 
     # ── Per-mode damping (matching Python dynamics.py L900-923) ──
     ζ = config.zeta
@@ -223,7 +228,7 @@ function build_params(geom::BearingGeometry, mat::MaterialParams,
 
     # Kinematic cage speed for relative orbital damping
     ω_ir_dim = config.inner_race_speed
-    γ = geom.d * cos(geom.alpha_0) / geom.d_m
+    γ = geom.d * cos(alpha_free(geom)) / geom.d_m
     ω_cage_dim = 0.5 * ω_ir_dim * (1 - γ)
     p[P_OMEGA_CAGE] = nondim_angvel(s, ω_cage_dim)
 

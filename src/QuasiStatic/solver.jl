@@ -279,7 +279,7 @@ function solve_quasi_static(geom::BearingGeometry, mat::MaterialParams;
     Z = geom.n_balls
     E_star = composite_modulus(mat, mat)
     γ = geom.d / geom.d_m
-    R_i = 0.5 * geom.d_m + (geom.f_i - 0.5) * geom.d * cos(geom.alpha_0)
+    R_i = 0.5 * geom.d_m + (geom.f_i - 0.5) * geom.d * cos(alpha_free(geom))
     ω = n_rpm / 60.0 * 2π
     psi = collect(0:Z-1) .* (360.0 / Z)
 
@@ -288,13 +288,13 @@ function solve_quasi_static(geom::BearingGeometry, mat::MaterialParams;
     λo = rc_id == 0 ? 0.0 : 2.0
 
     p = QuasiStaticProblemParams(
-        Z, geom.d, geom.d_m, geom.f_i, geom.f_o, geom.alpha_0,
+        Z, geom.d, geom.d_m, geom.f_i, geom.f_o, alpha_free(geom),
         γ, R_i, ball_mass(geom), ball_inertia(geom), E_star, psi,
         F_a, F_ry, F_rz, Theta_y, Theta_z, ω, delta_r_thermal,
         rc_id, λi, λo,
     )
 
-    u0 = x0 === nothing ? init_guess(Z, geom.alpha_0, geom.d, geom.f_i, geom.f_o, F_a) : copy(x0)
+    u0 = x0 === nothing ? init_guess(Z, alpha_free(geom), geom.d, geom.f_i, geom.f_o, F_a) : copy(x0)
 
     prob = NonlinearProblem(quasi_static_residual!, u0, p)
     sol = solve(prob, LevenbergMarquardt(; autodiff=AutoFiniteDiff());
