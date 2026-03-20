@@ -135,21 +135,21 @@ for j in 1:Z
         th_off = ADORE.thermal_offset(Z)
         T_ir_k = u_mat[i, th_off]
         T_or_k = u_mat[i, th_off+1]
-        CTE_k = p[ADORE.P_CTE]
-        T_ref_k = p[ADORE.P_T_REF]
-        δr_ir_k = CTE_k * (T_ir_k - T_ref_k) * (p[ADORE.P_DI] / 2)
-        δr_or_k = CTE_k * (T_or_k - T_ref_k) * (p[ADORE.P_DO] / 2)
+        CTE_k = p.thermal.CTE
+        T_ref_k = p.thermal.T_ref
+        δr_ir_k = CTE_k * (T_ir_k - T_ref_k) * (p.geom.D_i / 2)
+        δr_or_k = CTE_k * (T_or_k - T_ref_k) * (p.geom.D_o / 2)
         γy_k = u_mat[i, 4]
         γz_k = u_mat[i, 5]
         tilt_k = cθ * γy_k + sθ * γz_k
-        R_pi_k = p[ADORE.P_DI] / 2 + δr_ir_k
-        r_gc_i = R_pi_k + y_ir_s * (-sθ) + z_ir_s * cθ - p[ADORE.P_X_GI0] * tilt_k
-        x_gc_i = p[ADORE.P_X_GI0] + x_ir_s + R_pi_k * tilt_k
+        R_pi_k = p.geom.D_i / 2 + δr_ir_k
+        r_gc_i = R_pi_k + y_ir_s * (-sθ) + z_ir_s * cθ - p.geom.x_gi0 * tilt_k
+        x_gc_i = p.geom.x_gi0 + x_ir_s + R_pi_k * tilt_k
         α_i = atan(x_gc_i - x_b, r_gc_i - r_b)
 
         # Outer GC (with thermal expansion)
-        r_gc_o = p[ADORE.P_DO] / 2 + δr_or_k
-        x_gc_o = p[ADORE.P_X_GO0]
+        r_gc_o = p.geom.D_o / 2 + δr_or_k
+        x_gc_o = p.geom.x_go0
         α_o = atan(-(x_gc_o - x_b), -(r_gc_o - r_b))
 
         # True rolling vectors
@@ -170,14 +170,14 @@ end
 mean_orbit_rpm = vec(mean(orbit_rpm, dims=2))
 
 # ── Contact geometry (from kernel params) ──
-D_i_star = p[ADORE.P_DI]
-D_o_star = p[ADORE.P_DO]
-drb_i = p[ADORE.P_DRB_I]
-drb_o = p[ADORE.P_DRB_O]
-x_gi0_star = p[ADORE.P_X_GI0]
-x_go0_star = p[ADORE.P_X_GO0]
-Y_i = p[ADORE.P_YI]
-Y_o = p[ADORE.P_YO]
+D_i_star = p.geom.D_i
+D_o_star = p.geom.D_o
+drb_i = p.geom.drb_i
+drb_o = p.geom.drb_o
+x_gi0_star = p.geom.x_gi0
+x_go0_star = p.geom.x_go0
+Y_i = p.hertz.Y_i
+Y_o = p.hertz.Y_o
 Q_scale = scales.Q
 
 Q_inner = zeros(n_t, Z)
@@ -202,8 +202,8 @@ for i in 1:n_t
         th_off_q = ADORE.thermal_offset(Z)
         T_ir_q = u_mat[i, th_off_q]
         T_or_q = u_mat[i, th_off_q+1]
-        CTE_q = p[ADORE.P_CTE]
-        T_ref_q = p[ADORE.P_T_REF]
+        CTE_q = p.thermal.CTE
+        T_ref_q = p.thermal.T_ref
         γy_q = u_mat[i, 4]
         γz_q = u_mat[i, 5]
         δr_ir_q = CTE_q * (T_ir_q - T_ref_q) * (D_i_star / 2)
@@ -351,50 +351,55 @@ flush(stdout)
 
 fo_matrix = compute_field_outputs(result)   # (n_t, Z × N_FIELD_PER_BALL)
 
+# Build field name → index mapping from BallFieldOutput struct
+const _FO_NAMES = fieldnames(ADORE.BallFieldOutput)
+const _FO_IDX = Dict(fn => i for (i, fn) in enumerate(_FO_NAMES))
+
 # Reshape to per-ball arrays: fo_ball[i, j, field]
-fo_ball = zeros(n_t, Z, ADORE.N_FIELD_PER_BALL)
+N_FPB = ADORE.N_FIELD_PER_BALL
+fo_ball = zeros(n_t, Z, N_FPB)
 for j in 1:Z
-    base = (j - 1) * ADORE.N_FIELD_PER_BALL
-    for f in 1:ADORE.N_FIELD_PER_BALL
+    base = (j - 1) * N_FPB
+    for f in 1:N_FPB
         fo_ball[:, j, f] .= fo_matrix[:, base+f]
     end
 end
 
-# Field outputs are now in DIMENSIONAL units (fixed in field_output_kernel)
-# Extract directly — no scaling needed
+# Field outputs are now in DIMENSIONAL units (from BallFieldOutput struct)
+# Access using field index mapping — e.g. _FO_IDX[:Q_i] instead of ADORE.FO_Q_I
 
 # Contact loads [N] and angles [rad]
-fo_Qi = fo_ball[:, :, ADORE.FO_Q_I]
-fo_Qo = fo_ball[:, :, ADORE.FO_Q_O]
-fo_alpha_i = fo_ball[:, :, ADORE.FO_ALPHA_I]
-fo_alpha_o = fo_ball[:, :, ADORE.FO_ALPHA_O]
+fo_Qi = fo_ball[:, :, _FO_IDX[:Q_i]]
+fo_Qo = fo_ball[:, :, _FO_IDX[:Q_o]]
+fo_alpha_i = fo_ball[:, :, _FO_IDX[:α_i]]
+fo_alpha_o = fo_ball[:, :, _FO_IDX[:α_o]]
 
 # Forces [N]
-fo_F_trac_i = fo_ball[:, :, ADORE.FO_F_TRAC_I]
-fo_F_trac_o = fo_ball[:, :, ADORE.FO_F_TRAC_O]
-fo_F_drag = fo_ball[:, :, ADORE.FO_F_DRAG]
-fo_F_pocket = fo_ball[:, :, ADORE.FO_F_POCKET]
+fo_F_trac_i = fo_ball[:, :, _FO_IDX[:F_trac_i]]
+fo_F_trac_o = fo_ball[:, :, _FO_IDX[:F_trac_o]]
+fo_F_drag = fo_ball[:, :, _FO_IDX[:F_drag]]
+fo_F_pocket = fo_ball[:, :, _FO_IDX[:F_pocket]]
 
 # Moments [N·m]
-fo_M_spin_i = fo_ball[:, :, ADORE.FO_M_SPIN_I]
-fo_M_spin_o = fo_ball[:, :, ADORE.FO_M_SPIN_O]
+fo_M_spin_i = fo_ball[:, :, _FO_IDX[:M_spin_i]]
+fo_M_spin_o = fo_ball[:, :, _FO_IDX[:M_spin_o]]
 
 # Heat sources [W]
-fo_H_slide_i = fo_ball[:, :, ADORE.FO_H_SLIDE_I]
-fo_H_slide_o = fo_ball[:, :, ADORE.FO_H_SLIDE_O]
-fo_H_spin_i = fo_ball[:, :, ADORE.FO_H_SPIN_I]
-fo_H_spin_o = fo_ball[:, :, ADORE.FO_H_SPIN_O]
-fo_H_drag = fo_ball[:, :, ADORE.FO_H_DRAG]
-fo_H_churn = fo_ball[:, :, ADORE.FO_H_CHURN]
+fo_H_slide_i = fo_ball[:, :, _FO_IDX[:H_slide_i]]
+fo_H_slide_o = fo_ball[:, :, _FO_IDX[:H_slide_o]]
+fo_H_spin_i = fo_ball[:, :, _FO_IDX[:H_spin_i]]
+fo_H_spin_o = fo_ball[:, :, _FO_IDX[:H_spin_o]]
+fo_H_drag = fo_ball[:, :, _FO_IDX[:H_drag]]
+fo_H_churn = fo_ball[:, :, _FO_IDX[:H_churn]]
 fo_H_total = fo_H_slide_i .+ fo_H_slide_o .+ fo_H_spin_i .+ fo_H_spin_o .+ fo_H_drag .+ fo_H_churn
 
 # Angular velocities [rad/s]
-fo_omega_x = fo_ball[:, :, ADORE.FO_OMEGA_X]
-fo_omega_y = fo_ball[:, :, ADORE.FO_OMEGA_Y]
-fo_omega_z = fo_ball[:, :, ADORE.FO_OMEGA_Z]
-fo_w_spin_i = fo_ball[:, :, ADORE.FO_W_SPIN_I]
-fo_w_spin_o = fo_ball[:, :, ADORE.FO_W_SPIN_O]
-fo_theta_dot = fo_ball[:, :, ADORE.FO_THETA_DOT]
+fo_omega_x = fo_ball[:, :, _FO_IDX[:ω_x]]
+fo_omega_y = fo_ball[:, :, _FO_IDX[:ω_y]]
+fo_omega_z = fo_ball[:, :, _FO_IDX[:ω_z]]
+fo_w_spin_i = fo_ball[:, :, _FO_IDX[:ω_spin_i]]
+fo_w_spin_o = fo_ball[:, :, _FO_IDX[:ω_spin_o]]
+fo_theta_dot = fo_ball[:, :, _FO_IDX[:θ_dot]]
 
 # Gyroscopic moment: M_g = I_ball * ω_spin * ω_precession [N·m]
 I_ball = ball_inertia(geom)  # kg·m²
@@ -682,10 +687,10 @@ P_scale = scales.Q * scales.L / scales.T  # Power scale [W]
 C_scale = scales.Q * scales.L              # Thermal capacity scale [J/K]
 G_scale = scales.Q * scales.L / scales.T  # Conductance scale [W/K]
 
-C_ir_dim = p[ADORE.P_MCP_I] * C_scale
-C_or_dim = p[ADORE.P_MCP_O] * C_scale
-C_ball_dim = p[ADORE.P_MCP_BALL] * C_scale
-C_oil_dim = p[ADORE.P_MCP_OIL] * C_scale
+C_ir_dim = p.thermal.mcp_i * C_scale
+C_or_dim = p.thermal.mcp_o * C_scale
+C_ball_dim = p.thermal.mcp_ball * C_scale
+C_oil_dim = p.thermal.mcp_oil * C_scale
 
 # 1. Energy stored (Σ C·ΔT) — from state vector endpoints (exact)
 ΔT = T_end .- T_start

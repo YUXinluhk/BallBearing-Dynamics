@@ -1,7 +1,14 @@
 # =====================================================================
 # Physics/cage_contact.jl — Ball/cage pocket + cage/race pilot forces
 #
-# Port of dynamics_numba.py::_ball_cage_force_nb, _cage_race_force_nb
+# ⚠️  DEPRECATED — These functions are NOT called by the main ODE kernel.
+#     kernel.jl implements its own inline pocket/pilot contact model with:
+#       • Linear penalty stiffness (K·δ) instead of Hertz (K·δ^1.5)
+#       • smooth_hertz_delta + tanh regularization (ODE-solver friendly)
+#       • 3D slip friction with Newton's 3rd law back-reaction
+#     This file is retained as a reference implementation only.
+#
+# Original port of dynamics_numba.py::_ball_cage_force_nb, _cage_race_force_nb
 # =====================================================================
 
 """

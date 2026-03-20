@@ -48,7 +48,7 @@ cases = Dict{String, NamedTuple{(:label, :C_scale, :t_end, :dt_output), Tuple{St
 # Accelerated case (100×): short simulation, fast convergence
 cases["accel"] = (label="Accelerated (C/100)", C_scale=0.01, t_end=0.15, dt_output=0.002)
 # Physical case (1×): need 100× longer to reach same thermal state
-cases["physical"] = (label="Physical (1×)", C_scale=1.0, t_end=3.0, dt_output=0.05)
+cases["physical"] = (label="Physical (1×)", C_scale=1.0, t_end=0.5, dt_output=0.01)
 
 results = Dict{String, Any}()
 

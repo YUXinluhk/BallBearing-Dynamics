@@ -35,7 +35,8 @@ Rotate vector v by quaternion q: v' = q v q*.
 @inline function rotate_vector(q::Quaternion, v::AbstractVector)
     v_q = Quaternion(zero(eltype(v)), v[1], v[2], v[3])
     r = q * v_q * conj(q)
-    return SVector{3,eltype(r)}(imag_part(r)...)
+    ip = imag_part(r)
+    return SVector{3,typeof(real(r))}(ip[1], ip[2], ip[3])
 end
 
 """
@@ -46,7 +47,8 @@ Inverse-rotate vector v by quaternion q: v' = q* v q.
 @inline function inv_rotate_vector(q::Quaternion, v::AbstractVector)
     v_q = Quaternion(zero(eltype(v)), v[1], v[2], v[3])
     r = conj(q) * v_q * q
-    return SVector{3,eltype(r)}(imag_part(r)...)
+    ip = imag_part(r)
+    return SVector{3,typeof(real(r))}(ip[1], ip[2], ip[3])
 end
 
 """

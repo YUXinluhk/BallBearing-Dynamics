@@ -15,6 +15,7 @@ module ADORE
 
 using LinearAlgebra
 using StaticArrays
+using ComponentArrays
 using Printf
 using Statistics: mean
 using SparseArrays
@@ -37,6 +38,8 @@ export bearing_7210B, bearing_7008C, bearing_7010C, bearing_7014C, bearing_custo
 export cage_from_bearing, load_simulation_config
 
 # ── Layer 2: Physics (stateless pure functions) ─────────────────────
+# NOTE: ODEParams type definitions must be available before Physics/kinematics.jl
+include("Dynamics/params_types.jl")
 include("Physics/hertz.jl")
 include("Physics/ehl.jl")
 include("Physics/traction.jl")
@@ -44,6 +47,7 @@ include("Physics/drag_churning.jl")
 include("Physics/cage_contact.jl")
 include("Physics/rolling_resistance.jl")
 include("Physics/thermal.jl")
+include("Physics/kinematics.jl")
 
 export hertz_F_of_k, solve_kappa_bisection
 export hertz_Y_and_ab, hertz_from_curvatures, hertz_from_curvatures_vec
@@ -62,7 +66,7 @@ include("Transforms/frames.jl")
 export QUAT_IDENTITY, quat_derivative, rotate_vector, inv_rotate_vector
 export quat_to_rotmat, quat_renormalize, quat_from_euler_zyx
 export omega_body_from_euler, quat_from_components, kinematics_quat_derivative_baumgarte
-export T_azimuth, T_ac, contact_angles_from_direction
+export T_azimuth, T_ac, contact_basis_from_displacements
 export inertial_from_cylindrical, velocity_inertial_from_cylindrical
 
 # ── Layer 4: Scales ─────────────────────────────────────────────────
@@ -92,8 +96,8 @@ export n_state, n_pos_dofs, n_vel_dofs
 export ir_pos_view, ball_pos_view, ball_quat, ball_omega, cage_pos_view
 export ir_vel_view, ball_vel_view, cage_vel_view, set_ball_quat!
 export init_state, ode_rhs!
-export build_params, N_PARAMS
-export field_output_kernel, N_FIELD_PER_BALL
+export build_params, ODEParams, N_PARAMS
+export field_output_kernel, BallFieldOutput, N_FIELD_PER_BALL, flatten_field_outputs
 export build_jacobian_sparsity
 export SimResult, run_simulation, quaternion_renormalize_callback
 

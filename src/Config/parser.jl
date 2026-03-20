@@ -15,18 +15,28 @@ function load_simulation_config(filepath::String)
 
     # ── 1. Geometry ──
     if haskey(data, "geometry") && haskey(data["geometry"], "type")
-        # Load from preset if type is given
-        gtype = data["geometry"]["type"]
-        if gtype == "7210B"
-            geom, mat = bearing_7210B()
-        elseif gtype == "7008C"
-            geom, mat = bearing_7008C()
-        elseif gtype == "7010C"
-            geom, mat = bearing_7010C()
-        elseif gtype == "7014C"
-            geom, mat = bearing_7014C()
+        # Load from external TOML catalog if type is given
+        gtype = string(data["geometry"]["type"])
+        catalog_path = normpath(joinpath(@__DIR__, "../../data/catalogs/bearings.toml"))
+        if !isfile(catalog_path)
+            error("Bearing catalog not found at $catalog_path")
+        end
+        catalogs = TOML.parsefile(catalog_path)
+        if !haskey(catalogs, gtype)
+            error("Unknown bearing geometry preset '$gtype' not found in catalog")
+        end
+        bg_cat = catalogs[gtype]["geometry"]
+        geom = BearingGeometry(
+            d=bg_cat["d"], n_balls=bg_cat["n_balls"],
+            f_i=bg_cat["f_i"], f_o=bg_cat["f_o"],
+            d_m=bg_cat["d_m"], alpha_0=bg_cat["alpha_0"],
+            P_d=get(bg_cat, "P_d", 0.0), rho_ball=get(bg_cat, "rho_ball", 7800.0)
+        )
+        if haskey(catalogs[gtype], "material")
+            mat_cat = catalogs[gtype]["material"]
+            mat = MaterialParams(E=mat_cat["E"], nu=mat_cat["nu"])
         else
-            error("Unknown bearing geometry preset: $gtype")
+            mat = MaterialParams(E=2.08e11, nu=0.3)
         end
         # Overwrite specific keys if they are present
         bg_args = Dict{Symbol,Any}()
@@ -127,11 +137,13 @@ function load_simulation_config(filepath::String)
         rtol=get(int_data, "rtol", 1e-4),
         atol=get(int_data, "atol", 1e-7),
         h_max=get(int_data, "h_max", 1e-4),
-        max_steps=get(int_data, "max_steps", 10_000_000)
+        max_steps=get(int_data, "max_steps", 10_000_000),
+        eps_contact=get(int_data, "eps_contact", 1e-6)
     )
 
     # Dynamics/Operation
     inner_race_speed = get(cfg, "inner_race_speed_RPM", 0.0) * π / 30
+    outer_race_speed = get(cfg, "outer_race_speed_RPM", 0.0) * π / 30
 
     churn_data = get(data, "churning", Dict())
     churn = ChurningParams(
@@ -158,18 +170,21 @@ function load_simulation_config(filepath::String)
         G_oil_amb=get(therm_data, "G_oil_amb", 5.0),
         oil_flow_rate=get(therm_data, "oil_flow_rate", 0.0),
         T_oil_inlet=get(therm_data, "T_oil_inlet", NaN),
+        th_accel=get(therm_data, "th_accel", 10000.0),
     )
 
     config = SimulationConfig(
         t_end=get(cfg, "t_end", 0.5),
         dt_output=get(cfg, "dt_output", 5e-3),
         inner_race_speed=inner_race_speed,
+        outer_race_speed=outer_race_speed,
         F_axial=get(cfg, "F_axial", 0.0),
         F_radial=get(cfg, "F_radial", 0.0),
         t_ramp_end=get(cfg, "t_ramp_end", 0.01),
         mu_spin=get(cfg, "mu_spin", 0.06),
         c_structural=get(cfg, "c_structural", 0.0),
         zeta=get(cfg, "zeta", 0.10),
+        alpha2_relax_time=get(cfg, "alpha2_relax_time", 2e-6),
         delta_r_thermal=get(cfg, "delta_r_thermal", 0.0),
         integrator=integrator,
         churning=churn,

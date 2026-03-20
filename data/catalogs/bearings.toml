@@ -1,0 +1,62 @@
+# =====================================================================
+# ADORE Bearing Geometry Catalog
+# Standard Angular Contact Ball Bearings
+# Angles in radians (e.g. 15° = 0.261799, 40° = 0.698132)
+# Lengths in meters.
+# =====================================================================
+
+[7210B.geometry]
+d = 12.7e-3
+n_balls = 16
+f_i = 0.52
+f_o = 0.52
+d_m = 70.0e-3
+alpha_0 = 0.6981317007977318
+P_d = 0.0
+rho_ball = 7800.0
+
+[7210B.material]
+E = 2.08e11
+nu = 0.3
+
+[7008C.geometry]
+d = 7.938e-3
+n_balls = 16
+f_i = 0.52
+f_o = 0.53
+d_m = 54.0e-3
+alpha_0 = 0.2617993877991494
+P_d = 0.0
+rho_ball = 7800.0
+
+[7008C.material]
+E = 2.08e11
+nu = 0.3
+
+[7010C.geometry]
+d = 9.525e-3
+n_balls = 16
+f_i = 0.52
+f_o = 0.53
+d_m = 65.0e-3
+alpha_0 = 0.2617993877991494
+P_d = 0.0
+rho_ball = 7800.0
+
+[7010C.material]
+E = 2.08e11
+nu = 0.3
+
+[7014C.geometry]
+d = 12.7e-3
+n_balls = 18
+f_i = 0.52
+f_o = 0.53
+d_m = 90.0e-3
+alpha_0 = 0.2617993877991494
+P_d = 0.0
+rho_ball = 7800.0
+
+[7014C.material]
+E = 2.08e11
+nu = 0.3

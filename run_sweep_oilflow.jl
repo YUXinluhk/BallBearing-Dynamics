@@ -72,7 +72,7 @@ for (idx, V_dot) in enumerate(oil_flow_rates)
     )
 
     config = SimulationConfig(
-        t_end=base_config.t_end,
+        t_end=0.05,
         dt_output=base_config.dt_output,
         inner_race_speed=target_omega,
         F_axial=base_config.F_axial,

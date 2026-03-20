@@ -1,0 +1,52 @@
+# ADORE V2 — System-Level Test: High Speed Medium Load
+# 7008C bearing, 10000 RPM, axial 1000N + radial 500N, 10ms
+
+[geometry]
+type = "7008C"
+
+[material]
+E = 2.08e11
+nu = 0.3
+
+[lubricant]
+type = "mil_l_23699"
+
+[traction]
+kappa_0 = 0.08
+kappa_inf = 0.04
+kappa_m = 0.10
+u_m = 0.5
+
+[cage]
+auto_generate = true
+pocket_clearance_ratio = 0.01
+pilot_clearance_ratio = 0.002
+
+[operating_conditions]
+inner_race_speed_RPM = 10000.0
+F_axial = 1000.0
+F_radial = 500.0
+t_ramp_end = 0.002
+t_end = 0.01
+dt_output = 1e-4
+zeta = 0.10
+c_structural = 0.0
+mu_spin = 0.06
+
+[integrator]
+rtol = 1e-4
+atol = 1e-7
+h_max = 1e-4
+max_steps = 10000000
+
+[churning]
+rho_oil = 860.0
+rho_air = 0.6
+mu_oil = 0.005
+fill_fraction = 0.02
+cage_web = 5e-4
+
+[thermal]
+T_ambient = 300.0
+T_init = 350.0
+T_ref = 300.0

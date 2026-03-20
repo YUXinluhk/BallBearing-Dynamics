@@ -11,7 +11,7 @@ Extract dimensional data for one ball from SimResult.
 """
 function extract_ball_data(result::SimResult, ball_idx::Int)
     s = result.scales
-    Z = Int(result.params[P_NBALL])
+    Z = result.params.geom.Z
     n_t = length(result.t)
 
     x = zeros(n_t)
@@ -42,7 +42,7 @@ end
 """
 function extract_cage_data(result::SimResult)
     s = result.scales
-    Z = Int(result.params[P_NBALL])
+    Z = result.params.geom.Z
     n_t = length(result.t)
 
     x = zeros(n_t); y = zeros(n_t); z = zeros(n_t)
@@ -67,7 +67,7 @@ end
 """
 function extract_ir_data(result::SimResult)
     s = result.scales
-    Z = Int(result.params[P_NBALL])
+    Z = result.params.geom.Z
     n_t = length(result.t)
 
     x = zeros(n_t); y = zeros(n_t); z = zeros(n_t)
@@ -90,7 +90,7 @@ Compute field output for all saved timesteps.
 Returns matrix of size (n_time, Z × N_FIELD_PER_BALL).
 """
 function compute_field_outputs(result::SimResult)
-    Z = Int(result.params[P_NBALL])
+    Z = result.params.geom.Z
     n_t = length(result.t)
     n_fo = Z * N_FIELD_PER_BALL
 
@@ -98,7 +98,10 @@ function compute_field_outputs(result::SimResult)
 
     for i in 1:n_t
         t_star = nondim_time(result.scales, result.t[i])
-        fo_matrix[i, :] .= field_output_kernel(t_star, result.u[i, :], result.params)
+        # Reconstruct ComponentArray from flat vector using stored axes
+        u_ca = ComponentArray(result.u[i, :], result.ca_axes...)
+        outputs = field_output_kernel(t_star, u_ca, result.params)
+        fo_matrix[i, :] .= flatten_field_outputs(outputs)
     end
 
     return fo_matrix
@@ -111,9 +114,9 @@ Compute cage speed / kinematic theory speed vs time.
 """
 function cage_speed_ratio(result::SimResult)
     cage = extract_cage_data(result)
-    ω_ir = result.params[P_OMEGA_IR] * result.scales.W  # dimensional
-    γ = result.params[P_D] / result.params[P_DM]
-    cos_α₀ = cos(result.params[P_ALPHA0])
+    ω_ir = result.params.load.omega_ir * result.scales.W  # dimensional
+    γ = result.params.geom.D / result.params.geom.d_m
+    cos_α₀ = cos(result.params.geom.alpha_0)
     ω_cage_kin = 0.5 * ω_ir * (1 - γ * cos_α₀)
 
     return cage.θ̇ ./ ω_cage_kin

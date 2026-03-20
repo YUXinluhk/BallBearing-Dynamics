@@ -5,8 +5,8 @@
 #          thermal response) for manuscript revision.
 #
 # Key differences from Case4.toml:
-#   - t_end = 2.0 s (vs 0.3 s)
-#   - Thermal capacities reduced by 100x for accelerated convergence
+#   - t_end = 0.5 s (vs 0.3 s)
+#   - Thermal capacities reduced by 500x for accelerated convergence
 #   - dt_output = 0.001 s (1 ms resolution)
 # =====================================================================
 
@@ -36,7 +36,7 @@ inner_race_speed_RPM = 10000.0
 F_axial = 1000.0
 F_radial = 1000.0
 t_ramp_end = 0.010
-t_end = 2.0
+t_end = 0.5
 dt_output = 0.001
 zeta = 0.10
 c_structural = 0.0
@@ -59,8 +59,8 @@ cage_web = 5e-4
 T_ambient = 300.0
 T_init = 350.0
 T_ref = 300.0
-# 100x accelerated thermal capacities (auto values / 100)
-C_ir = 0.817
-C_or = 1.225
-C_ball = 0.616
-C_oil = 2.952
+# 500x accelerated thermal capacities (auto values / 500)
+C_ir = 0.163
+C_or = 0.245
+C_ball = 0.123
+C_oil = 0.590

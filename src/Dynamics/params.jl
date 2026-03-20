@@ -1,114 +1,17 @@
 # =====================================================================
-# Dynamics/params.jl — Flat parameter vector for the ODE kernel
+# Dynamics/params.jl — Structured parameter builder for the ODE kernel
 #
-# Port of dynamics.py::_build_numba_params.
-# Named constants for indexing into the parameter array.
+# Type definitions are in params_types.jl (included before Physics layer).
+# This file contains only the build_params constructor function.
 # =====================================================================
 
 using Printf
 using Statistics: mean
 
-# ── Parameter indices (1-indexed) ─────────────────────────────────────
-
-const P_D = 1   # ball diameter
-const P_DM = 2   # pitch diameter
-const P_FI = 3   # inner conformity
-const P_FO = 4   # outer conformity
-const P_ALPHA0 = 5   # free contact angle
-const P_NBALL = 6   # number of balls
-const P_MBALL = 7   # ball mass [nondim]
-const P_JBALL = 8   # ball inertia [nondim]
-const P_MIR = 9   # inner race mass [nondim]
-const P_E_PRIME = 10  # composite modulus [nondim]
-const P_YI = 11  # inner Hertz Υ★
-const P_YO = 12  # outer Hertz Υ★
-const P_AI = 13  # inner a★
-const P_BO = 14  # outer b★
-const P_BI = 15  # inner b★
-const P_AO = 16  # outer a★
-const P_SRI = 17  # Σρ inner [nondim]
-const P_SRO = 18  # Σρ outer [nondim]
-const P_DI = 19  # D_inner [nondim]
-const P_DO = 20  # D_outer [nondim]
-const P_MU0 = 21  # μ₀ viscosity [nondim]
-const P_ALPHA_PV = 22  # α_pv
-const P_BETA_TEMP = 23  # β_temp
-const P_LAMBDA_LSS = 24  # Λ_LSS
-const P_T0 = 25  # T₀
-const P_KTH = 26  # K_th
-const P_RHO_LUB = 27  # ρ_lub
-const P_TRAC_A = 28  # traction A
-const P_TRAC_B = 29  # traction B
-const P_TRAC_C = 30  # traction C
-const P_TRAC_D = 31  # traction D
-const P_MU_SPIN = 32  # μ_spin
-const P_C_STRUCT = 33  # structural damping (legacy, may be overridden by per-mode)
-const P_ZETA = 34  # damping ratio
-const P_OMEGA_IR = 35  # inner race speed [nondim]
-const P_FA = 36  # axial load [nondim]
-const P_FR = 37  # radial load [nondim]
-const P_T_RAMP = 38  # ramp time [nondim]
-const P_RHO_EFF = 39  # effective density [nondim]
-const P_MU_OIL = 40  # oil viscosity [nondim]
-const P_CAGE_WEB = 41  # cage web [nondim]
-const P_POCKET_R = 42  # pocket radius [nondim]
-const P_POCKET_CLR = 43  # pocket clearance [nondim]
-const P_CAGE_MASS = 44  # cage mass [nondim]
-const P_CAGE_IXX = 45  # cage Ixx [nondim]
-const P_CAGE_IYY = 46  # cage Iyy [nondim]
-const P_K_POCKET = 47  # pocket stiffness [nondim]
-const P_K_PILOT = 48  # pilot stiffness [nondim]
-const P_MU_POCKET = 49  # pocket friction
-const P_MU_PILOT = 50  # pilot friction
-const P_C_CAGE = 51  # cage damping
-const P_PILOT_CLR = 52  # pilot clearance [nondim]
-const P_PILOT_IR = 53  # pilot is inner (1/0)
-const P_CAGE_IR = 54  # cage inner radius [nondim]
-const P_CAGE_OR = 55  # cage outer radius [nondim]
-const P_DRB_I = 56  # distance race-ball center inner
-const P_DRB_O = 57  # distance race-ball center outer
-const P_DELTA_R_TH = 58  # thermal radial expansion [nondim]
-const P_X_GI0 = 59  # inner groove center axial offset ★
-const P_X_GO0 = 60  # outer groove center axial offset ★
-# Per-mode damping (matching Python dynamics.py per-mode model)
-const P_C_BALL_TRANS = 61  # ball axial/radial damping ★
-const P_C_BALL_ORBIT = 62  # ball orbital θ damping ★
-const P_C_BALL_SPIN = 63  # ball spin ω damping ★
-const P_C_IR_DAMP = 64  # inner race translation damping ★
-const P_C_CAGE_DAMP = 65  # cage translation/rotation damping ★
-const P_C_TILT = 66  # inner race tilt damping ★
-const P_OMEGA_CAGE = 67  # kinematic cage speed ★
-const P_V_SCALE = 68     # velocity scale V [m/s] (for traction/drag dimensionalization)
-const P_W_SCALE = 69     # angular velocity scale W [rad/s] (for spin moment dimensionalization)
-const P_L_SCALE = 70     # length scale L [m] (for contact geometry dimensionalization)
-const P_Q_SCALE = 71     # force scale Q [N] (for force dimensionalization)
-const P_E2_I = 72        # E(m) inner contact (precomputed elliptic integral)
-const P_E2_O = 73        # E(m) outer contact (precomputed elliptic integral)
-
-# Thermal Parameters
-const P_MCP_I = 74
-const P_MCP_O = 75
-const P_MCP_BALL = 76
-const P_MCP_OIL = 77
-const P_G_IR_BALL = 78
-const P_G_OR_BALL = 79
-const P_G_BALL_OIL = 80
-const P_G_OR_AMB = 81
-const P_G_OIL_AMB = 82
-const P_T_AMB = 83
-const P_CTE = 84       # CTE [1/K] (dimensional)
-const P_T_REF = 85     # T_ref [K] for thermal expansion
-const P_OIL_FLOW_MDOT_CP = 86  # ṁ·cₚ [W/K] oil flow cooling coefficient (nondim)
-const P_T_OIL_INLET = 87       # T_oil_inlet [K] (dimensional)
-const P_EFFUSIVITY = 88        # effusivity [W·s^0.5/(m^2·K)] (dimensional)
-const P_OMEGA_OR = 89          # outer race speed [nondim]
-
-const N_PARAMS = 89
-
 """
-    build_params(geom, mat, lub, trac, cage, config, scales, h_inner, h_outer) → Vector{Float64}
+    build_params(geom, mat, lub, trac, cage, config, scales, h_inner, h_outer) → ODEParams
 
-Build flat parameter vector for the ODE kernel (all non-dimensional).
+Build structured parameter pack for the ODE kernel (all nondimensional).
 """
 function build_params(geom::BearingGeometry, mat::MaterialParams,
     lub::LubricantParams, trac::TractionParams,
@@ -117,77 +20,59 @@ function build_params(geom::BearingGeometry, mat::MaterialParams,
     h_inner::HertzContact, h_outer::HertzContact;
     qs::Union{Nothing,QuasiStaticResult}=nothing)
     s = scales
-    p = zeros(N_PARAMS)
 
-    p[P_D] = nondim_length(s, geom.d)
-    p[P_DM] = nondim_length(s, geom.d_m)
-    p[P_FI] = geom.f_i
-    p[P_FO] = geom.f_o
-    p[P_ALPHA0] = alpha_free(geom)  # Use clearance-corrected free angle
-    p[P_NBALL] = Float64(geom.n_balls)
-    p[P_MBALL] = nondim_mass(s, ball_mass(geom))
-    p[P_JBALL] = nondim_inertia(s, ball_inertia(geom))
-    p[P_MIR] = nondim_mass(s, inner_race_mass(geom))
-    p[P_E_PRIME] = composite_modulus(mat, mat) / (s.Q / s.L^2)
-    p[P_EFFUSIVITY] = mat.effusivity
-    p[P_YI] = nondim_stiffness(h_inner, s)
-    p[P_YO] = nondim_stiffness(h_outer, s)
-    p[P_AI] = h_inner.a_star
-    p[P_BI] = h_inner.b_star
-    p[P_AO] = h_outer.a_star
-    p[P_BO] = h_outer.b_star
-    p[P_SRI] = h_inner.sum_rho * s.L
-    p[P_SRO] = h_outer.sum_rho * s.L
-    p[P_DI] = nondim_length(s, D_i(geom))
-    p[P_DO] = nondim_length(s, D_o(geom))
-    p[P_MU0] = lub.mu_0
-    p[P_ALPHA_PV] = lub.alpha_pv
-    p[P_BETA_TEMP] = lub.beta_temp
-    p[P_LAMBDA_LSS] = lub.Lambda_LSS
-    p[P_T0] = lub.T_0
-    p[P_KTH] = lub.K_th
-    p[P_RHO_LUB] = lub.rho_lub
-    p[P_TRAC_A] = trac.A
-    p[P_TRAC_B] = trac.B
-    p[P_TRAC_C] = trac.C
-    p[P_TRAC_D] = trac.D
-    p[P_MU_SPIN] = config.mu_spin
-    p[P_C_STRUCT] = config.c_structural / (s.Q * s.T / s.L)  # damping nondim
-    p[P_ZETA] = config.zeta
-    p[P_OMEGA_IR] = nondim_angvel(s, config.inner_race_speed)
-    p[P_OMEGA_OR] = nondim_angvel(s, config.outer_race_speed)
-    p[P_FA] = nondim_force(s, config.F_axial)
-    p[P_FR] = nondim_force(s, config.F_radial)
-    p[P_T_RAMP] = nondim_time(s, config.t_ramp_end)
-    churn = config.churning
-    p[P_RHO_EFF] = effective_density(churn.rho_oil, churn.rho_air, churn.fill_fraction)
-    p[P_MU_OIL] = churn.mu_oil
-    p[P_CAGE_WEB] = nondim_length(s, churn.cage_web)
-    p[P_POCKET_R] = nondim_length(s, cage.pocket_radius)
-    p[P_POCKET_CLR] = nondim_length(s, cage.pocket_clearance)
-    p[P_CAGE_MASS] = nondim_mass(s, cage.cage_mass)
-    p[P_CAGE_IXX] = nondim_inertia(s, cage.cage_inertia_xx)
-    p[P_CAGE_IYY] = nondim_inertia(s, cage.cage_inertia_yy)
-    p[P_K_POCKET] = cage.stiffness_pocket / (s.Q / s.L)
-    p[P_K_PILOT] = cage.stiffness_pilot / (s.Q / s.L)
-    p[P_MU_POCKET] = cage.mu_pocket
-    p[P_MU_PILOT] = cage.mu_pilot
-    p[P_C_CAGE] = cage.c_damping / (s.Q * s.T / s.L)
-    p[P_PILOT_CLR] = nondim_length(s, cage.pilot_clearance)
-    p[P_PILOT_IR] = cage.pilot_is_inner ? 1.0 : 0.0
-    p[P_CAGE_IR] = nondim_length(s, cage.cage_inner_radius)
-    p[P_CAGE_OR] = nondim_length(s, cage.cage_outer_radius)
-    p[P_DRB_I] = nondim_length(s, (geom.f_i - 0.5) * geom.d)
-    p[P_DRB_O] = nondim_length(s, (geom.f_o - 0.5) * geom.d)
-    p[P_DELTA_R_TH] = nondim_length(s, config.delta_r_thermal)
-    # Groove center axial offsets (Harris §3.5): B·sin(α_f)
+    # ── Geometry ──
+    α_f = alpha_free(geom)
     B_i = (geom.f_i - 0.5) * geom.d
     B_o = (geom.f_o - 0.5) * geom.d
-    α_f = alpha_free(geom)
-    p[P_X_GI0] = nondim_length(s, B_i * sin(α_f))  # positive
-    p[P_X_GO0] = nondim_length(s, -B_o * sin(α_f))  # negative
+    geom_nd = GeomParams(
+        nondim_length(s, geom.d),
+        nondim_length(s, geom.d_m),
+        geom.f_i, geom.f_o, α_f, geom.n_balls,
+        nondim_length(s, D_i(geom)),
+        nondim_length(s, D_o(geom)),
+        nondim_length(s, (geom.f_i - 0.5) * geom.d),
+        nondim_length(s, (geom.f_o - 0.5) * geom.d),
+        nondim_length(s, B_i * sin(α_f)),
+        nondim_length(s, -B_o * sin(α_f))
+    )
 
-    # ── Per-mode damping (matching Python dynamics.py L900-923) ──
+    # ── Mass/Inertia ──
+    mass_nd = MassParams(
+        nondim_mass(s, ball_mass(geom)),
+        nondim_inertia(s, ball_inertia(geom)),
+        nondim_mass(s, inner_race_mass(geom)),
+        nondim_mass(s, cage.cage_mass),
+        nondim_inertia(s, cage.cage_inertia_xx),
+        nondim_inertia(s, cage.cage_inertia_yy)
+    )
+
+    # ── Hertz ──
+    hertz_nd = HertzParams(
+        composite_modulus(mat, mat) / (s.Q / s.L^2),
+        nondim_stiffness(h_inner, s),
+        nondim_stiffness(h_outer, s),
+        h_inner.a_star, h_inner.b_star,
+        h_outer.a_star, h_outer.b_star,
+        h_inner.sum_rho * s.L,
+        h_outer.sum_rho * s.L,
+        h_inner.E2, h_outer.E2,
+        config.integrator.eps_contact
+    )
+
+    # ── Lubricant ──
+    churn = config.churning
+    lub_nd = LubParams(
+        lub.mu_0, lub.alpha_pv, lub.beta_temp, lub.Lambda_LSS,
+        lub.T_0, lub.K_th, lub.rho_lub,
+        effective_density(churn.rho_oil, churn.rho_air, churn.fill_fraction),
+        churn.mu_oil, mat.effusivity
+    )
+
+    # ── Traction ──
+    trac_nd = TractionCoeffs(trac.A, trac.B, trac.C, trac.D)
+
+    # ── Per-mode damping ──
     ζ = config.zeta
     Z = geom.n_balls
     m_ball_dim = ball_mass(geom)
@@ -196,11 +81,10 @@ function build_params(geom::BearingGeometry, mat::MaterialParams,
     I_ball_dim = ball_inertia(geom)
     r_ball_dim = r_ball(geom)
 
-    # Average Hertz stiffness from QS penetration
     if qs !== nothing && any(qs.delta_inner .> 0)
         δ_avg = 0.5 * (mean(qs.delta_inner) + mean(qs.delta_outer))
     else
-        δ_avg = 1e-6  # fallback
+        δ_avg = 1e-6
     end
     K_hertz = 1.5 * h_inner.Upsilon * sqrt(max(δ_avg, 1e-8))
 
@@ -211,88 +95,94 @@ function build_params(geom::BearingGeometry, mat::MaterialParams,
     c_ball_orbit_dim = 2ζ * sqrt(K_cage_proxy * m_ball_dim)
     K_rot = K_hertz * r_ball_dim^2
     c_ball_spin_dim = 2ζ * sqrt(K_rot * I_ball_dim)
-    c_tilt_dim = max(c_ir_dim, 2ζ * sqrt(K_hertz * m_ir_dim * (geom.d_m / 2)^2))
+    c_tilt_dim = c_ir_dim * (geom.d_m / 2)^2 * 0.1
 
-    # ── 严谨的阻尼无量纲化隔离 ──
-    nondim_force_damp(c) = c * s.V / s.Q      # 平动阻尼系数无量纲化
-    nondim_moment_damp(c) = c * s.W / s.M     # 转动/扭矩阻尼系数无量纲化
+    nondim_force_damp(c) = c * s.V / s.Q
+    nondim_moment_damp(c) = c * s.W / s.M
 
-    p[P_C_BALL_TRANS] = nondim_force_damp(c_ball_trans_dim)
-    p[P_C_BALL_ORBIT] = nondim_force_damp(c_ball_orbit_dim)
-    p[P_C_IR_DAMP] = nondim_force_damp(c_ir_dim)
-    p[P_C_CAGE_DAMP] = nondim_force_damp(c_cage_dim)
-
-    # 修复：自旋与倾角阻尼为扭矩性质，必须使用力矩尺度！
-    p[P_C_BALL_SPIN] = nondim_moment_damp(c_ball_spin_dim)
-    p[P_C_TILT] = max(nondim_moment_damp(c_tilt_dim), 1.0)
-
-    # Kinematic cage speed for relative orbital damping
-    ω_ir_dim = config.inner_race_speed
-    γ = geom.d * cos(alpha_free(geom)) / geom.d_m
-    ω_cage_dim = 0.5 * ω_ir_dim * (1 - γ)
-    p[P_OMEGA_CAGE] = nondim_angvel(s, ω_cage_dim)
+    damp_nd = DampingCoeffs(
+        nondim_force_damp(c_ball_trans_dim),
+        nondim_force_damp(c_ball_orbit_dim),
+        nondim_moment_damp(c_ball_spin_dim),
+        nondim_force_damp(c_ir_dim),
+        nondim_force_damp(c_cage_dim),
+        nondim_moment_damp(c_tilt_dim)
+    )
 
     @printf("\n=== Per-Mode Damping (ζ = %.2f) ===\n", ζ)
     @printf("  K_hertz = %.2e N/m  (δ_avg = %.2f µm)\n", K_hertz, δ_avg * 1e6)
-    @printf("  c_ball_trans  = %.2f N·s/m  (c★ = %.6f)\n", c_ball_trans_dim, p[P_C_BALL_TRANS])
-    @printf("  c_ball_orbit  = %.2f N·s/m  (c★ = %.6f)\n", c_ball_orbit_dim, p[P_C_BALL_ORBIT])
-    @printf("  c_ball_spin   = %.4f N·m·s   (c★ = %.6f)\n", c_ball_spin_dim, p[P_C_BALL_SPIN])
-    @printf("  c_ir          = %.2f N·s/m  (c★ = %.6f)\n", c_ir_dim, p[P_C_IR_DAMP])
-    @printf("  c_cage        = %.2f N·s/m  (c★ = %.6f)\n", c_cage_dim, p[P_C_CAGE_DAMP])
-    @printf("  c_tilt        = %.2f N·s/m  (c★ = %.6f)\n", c_tilt_dim, p[P_C_TILT])
+    @printf("  c_ball_trans  = %.2f N·s/m  (c★ = %.6f)\n", c_ball_trans_dim, damp_nd.c_ball_trans)
+    @printf("  c_ball_orbit  = %.2f N·s/m  (c★ = %.6f)\n", c_ball_orbit_dim, damp_nd.c_ball_orbit)
+    @printf("  c_ball_spin   = %.4f N·m·s   (c★ = %.6f)\n", c_ball_spin_dim, damp_nd.c_ball_spin)
+    @printf("  c_ir          = %.2f N·s/m  (c★ = %.6f)\n", c_ir_dim, damp_nd.c_ir)
+    @printf("  c_cage        = %.2f N·s/m  (c★ = %.6f)\n", c_cage_dim, damp_nd.c_cage)
+    @printf("  c_tilt        = %.2f N·s/m  (c★ = %.6f)\n", c_tilt_dim, damp_nd.c_tilt)
 
-    # Dimensional scales for kernel (traction/drag/spin use dimensional inputs)
-    p[P_V_SCALE] = s.V
-    p[P_W_SCALE] = s.W
-    p[P_L_SCALE] = s.L
-    p[P_Q_SCALE] = s.Q
+    # ── Cage ──
+    cage_nd = CageParams(
+        nondim_length(s, cage.pocket_clearance),
+        cage.stiffness_pocket / (s.Q / s.L),
+        cage.mu_pocket,
+        cage.stiffness_pilot / (s.Q / s.L),
+        cage.mu_pilot,
+        nondim_length(s, cage.pilot_clearance),
+        cage.pilot_is_inner,
+        nondim_length(s, cage.cage_inner_radius),
+        nondim_length(s, cage.cage_outer_radius),
+        nondim_length(s, churn.cage_web),
+        cage.c_damping / (s.Q * s.T / s.L)
+    )
 
-    # Precomputed elliptic integrals E(m) for spin moment (avoids hot-loop ellipE calls)
-    p[P_E2_I] = h_inner.E2
-    p[P_E2_O] = h_outer.E2
+    # ── Loads ──
+    ω_ir_dim = config.inner_race_speed
+    γ = geom.d * cos(α_f) / geom.d_m
+    ω_cage_dim = 0.5 * ω_ir_dim * (1 - γ)
 
-    # ── Thermal Network Parameters ──
+    load_nd = LoadParams(
+        nondim_angvel(s, config.inner_race_speed),
+        nondim_angvel(s, config.outer_race_speed),
+        nondim_angvel(s, ω_cage_dim),
+        nondim_force(s, config.F_axial),
+        nondim_force(s, config.F_radial),
+        nondim_time(s, config.t_ramp_end),
+        config.mu_spin, config.zeta
+    )
+
+    # ── Scales ──
+    scale_nd = ScaleFactors(s.V, s.W, s.L, s.Q, s.T)
+
+    # ── Thermal ──
     th = config.thermal
-    # Auto-calculate thermal mass if NaN
-    C_ir = isnan(th.C_ir) ? inner_race_mass(geom) * th.c_steel : th.C_ir
-    # Estimate outer race mass as ~1.5x inner race mass
-    C_or = isnan(th.C_or) ? inner_race_mass(geom) * 1.5 * th.c_steel : th.C_or
-
-    # C_ball is the lumped heat capacity for ALL balls combined
-    C_ball = isnan(th.C_ball) ? ball_mass(geom) * Z * th.c_steel : th.C_ball
-    # Oil sump volume arbitrary estimate: 10x total ball volume inside bearing
-    C_oil = isnan(th.C_oil) ? ball_mass(geom) * Z * 10.0 * (lub.rho_lub / geom.rho_ball) * lub.c_p : th.C_oil
+    th_accel = th.th_accel
+    C_ir = (isnan(th.C_ir) ? inner_race_mass(geom) * th.c_steel : th.C_ir) / th_accel
+    C_or = (isnan(th.C_or) ? inner_race_mass(geom) * 1.5 * th.c_steel : th.C_or) / th_accel
+    C_ball = (isnan(th.C_ball) ? ball_mass(geom) * Z * th.c_steel : th.C_ball) / th_accel
+    C_oil = (isnan(th.C_oil) ? ball_mass(geom) * Z * 10.0 * (lub.rho_lub / geom.rho_ball) * lub.c_p : th.C_oil) / th_accel
 
     nondim_mcp(C) = C / (s.Q * s.L)
     nondim_G(G) = G / (s.Q * s.L / s.T)
 
-    p[P_MCP_I] = nondim_mcp(C_ir)
-    p[P_MCP_O] = nondim_mcp(C_or)
-    p[P_MCP_BALL] = nondim_mcp(C_ball)
-    p[P_MCP_OIL] = nondim_mcp(C_oil)
-
-    p[P_G_IR_BALL] = nondim_G(th.G_ir_ball)
-    p[P_G_OR_BALL] = nondim_G(th.G_or_ball)
-    p[P_G_BALL_OIL] = nondim_G(th.G_ball_oil)
-    p[P_G_OR_AMB] = nondim_G(th.G_or_amb)
-    p[P_G_OIL_AMB] = nondim_G(th.G_oil_amb)
-    p[P_T_AMB] = th.T_ambient
-    p[P_CTE] = th.CTE           # [1/K] — dimensional, δr = CTE·ΔT·R★ gives nondim length
-    p[P_T_REF] = th.T_init      # [K] 【Bug9修复】align with ODE initial T to avoid thermal shock
-
-    # ── Oil Flow Cooling (Plan 2: circulation model) ──
-    # Convert oil_flow_rate [cm³/min] → ṁ·cₚ [W/K]
-    # ṁ = ρ_oil [kg/m³] × V̇ [m³/s] = ρ_oil × (flow_rate_cm3_per_min / 60 / 1e6)
     T_oil_in = isnan(th.T_oil_inlet) ? th.T_init : th.T_oil_inlet
     if th.oil_flow_rate > 0.0
-        V_dot_m3s = th.oil_flow_rate / 60.0 / 1e6  # cm³/min → m³/s
-        m_dot = lub.rho_lub * V_dot_m3s              # [kg/s]
-        mdot_cp = m_dot * lub.c_p                    # [W/K]
+        V_dot_m3s = th.oil_flow_rate / 60.0 / 1e6
+        m_dot = lub.rho_lub * V_dot_m3s
+        mdot_cp = m_dot * lub.c_p
     else
         mdot_cp = 0.0
     end
-    p[P_OIL_FLOW_MDOT_CP] = nondim_G(mdot_cp)  # nondimensionalize same as conductance
-    p[P_T_OIL_INLET] = T_oil_in                 # [K] dimensional
 
-    return p
+    thermal_nd = ThermalNDParams(
+        nondim_mcp(C_ir), nondim_mcp(C_or), nondim_mcp(C_ball), nondim_mcp(C_oil),
+        nondim_G(th.G_ir_ball), nondim_G(th.G_or_ball),
+        nondim_G(th.G_ball_oil), nondim_G(th.G_or_amb), nondim_G(th.G_oil_amb),
+        th.T_ambient, th.CTE, th.T_init,
+        geom.rho_ball, mat.E,
+        nondim_G(mdot_cp), T_oil_in
+    )
+
+    return ODEParams(geom_nd, mass_nd, hertz_nd, lub_nd, trac_nd, damp_nd,
+                     cage_nd, load_nd, scale_nd, thermal_nd)
 end
+
+# ── Legacy compat: keep N_PARAMS symbol for postprocess backward compat ──
+const N_PARAMS = 93

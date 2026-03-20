@@ -1,36 +1,40 @@
 # =====================================================================
 # Dynamics/jacobian_sparsity.jl — Analytical Jacobian sparsity pattern
 #
-# The bearing ODE has block-sparse structure: ball j only couples to
-# its own states + inner race + cage (NOT to other balls).
-# Declaring this pattern lets FiniteDiff color the Jacobian with
-# ~40 groups instead of 226 columns → 5-10× fewer RHS evaluations.
+# Derived from ComponentArray layout (not flat offset calculators).
+# Ball j only couples to its own states + inner race + cage + thermal.
 # =====================================================================
-#
-# Requires: SparseArrays (imported at module level)
 
 """
     build_jacobian_sparsity(Z::Int) → SparseMatrixCSC{Float64}
 
 Build the analytical Jacobian sparsity pattern for the bearing ODE.
 
-The state vector layout is:
-  Position: IR(5) + Ball(7)×Z + Cage(4)
-  Velocity: IR(5) + Ball(6)×Z + Cage(4)
-  Total = 18 + 13Z
-
-Coupling structure:
-  - Inner race ↔ all balls (via contact forces)
-  - Cage ↔ all balls (via pocket forces)
-  - Ball j ↔ only itself + IR + Cage (NOT other balls)
-  - Position derivatives depend on velocities (kinematic)
-  - Velocity derivatives depend on positions (forces) + velocities (damping)
+Uses a dummy ComponentArray to determine actual flat indices, ensuring
+the pattern matches the ComponentArray memory layout used by the kernel.
 """
 function build_jacobian_sparsity(Z::Int)
-    N = n_state(Z)
-    N_p = n_pos_dofs(Z)
+    # Build a dummy CA with same structure as init_state creates
+    ball_states = [(pos=(x=0.0, r=0.0, θ=0.0, q0=0.0, q1=0.0, q2=0.0, q3=0.0),
+                    vel=(x=0.0, r=0.0, θ=0.0, ωx=0.0, ωy=0.0, ωz=0.0)) for _ in 1:Z]
+    dummy_nt = (
+        ir = (pos=(x=0.0, y=0.0, z=0.0, γy=0.0, γz=0.0), vel=(x=0.0, y=0.0, z=0.0, γy=0.0, γz=0.0)),
+        cage = (pos=(x=0.0, y=0.0, z=0.0, θ=0.0), vel=(x=0.0, y=0.0, z=0.0, θ=0.0)),
+        ball = ball_states,
+        thermal = (T_i=0.0, T_o=0.0, T_b=0.0, T_oil=0.0),
+        heat = (ir=0.0, or_=0.0, b=0.0, oil=0.0, Q_amb=0.0, Cp=0.0)
+    )
+    ca = ComponentArray(dummy_nt)
+    N = length(ca)
 
-    # Collect (row, col) pairs for non-zero entries
+    # Helper: get flat index range of a ComponentArray view
+    function ca_indices(view_expr)
+        # Mark the view with sequential indices, read them back
+        test = ComponentArray(collect(1.0:N), getaxes(ca)...)
+        v = view_expr(test)
+        return Int.(collect(v))
+    end
+
     rows = Int[]
     cols = Int[]
 
@@ -41,38 +45,26 @@ function build_jacobian_sparsity(Z::Int)
         end
     end
 
-    # ── Index ranges ──
-    # Position ranges
-    ir_p = ir_pos_offset():ir_pos_offset()+N_IR_POS-1
-    cage_p = cage_pos_offset(Z):cage_pos_offset(Z)+N_CAGE_POS-1
-    ball_p = [ball_pos_offset(j):ball_pos_offset(j)+N_BALL_POS-1 for j in 1:Z]
-
-    # Velocity ranges
-    ir_v = ir_vel_offset(Z):ir_vel_offset(Z)+N_IR_VEL-1
-    cage_v = cage_vel_offset(Z):cage_vel_offset(Z)+N_CAGE_VEL-1
-    ball_v = [ball_vel_offset(j, Z):ball_vel_offset(j, Z)+N_BALL_VEL-1 for j in 1:Z]
+    # ── Index ranges from ComponentArray ──
+    ir_p  = ca_indices(u -> u.ir.pos)
+    ir_v  = ca_indices(u -> u.ir.vel)
+    cage_p = ca_indices(u -> u.cage.pos)
+    cage_v = ca_indices(u -> u.cage.vel)
+    ball_p = [ca_indices(u -> u.ball[j].pos) for j in 1:Z]
+    ball_v = [ca_indices(u -> u.ball[j].vel) for j in 1:Z]
+    th    = ca_indices(u -> u.thermal)
+    ha    = ca_indices(u -> u.heat)
 
     # ── 1. Kinematic: position derivatives = velocities ──
-    # d(IR_pos)/dt depends on IR_vel
     mark_block!(ir_p, ir_v)
-    # d(cage_pos)/dt depends on cage_vel
     mark_block!(cage_p, cage_v)
-    # d(ball_pos)/dt depends on ball_vel (+ quaternion depends on ω)
     for j in 1:Z
         mark_block!(ball_p[j], ball_v[j])
-        # Quaternion also depends on own quaternion (q̇ = ½ q ⊗ ω)
-        mark_block!(ball_p[j], ball_p[j])
+        mark_block!(ball_p[j], ball_p[j])   # quaternion self-coupling
     end
 
     # ── 2. Force coupling: velocity derivatives ──
     for j in 1:Z
-        # Ball acceleration depends on:
-        #   - own position (contact geometry, traction, drag)
-        #   - own velocity (damping, Coriolis)
-        #   - IR position (groove center → contact geometry)
-        #   - IR velocity (surface velocity → slide speed)
-        #   - cage position (pocket interaction)
-        #   - cage velocity (pocket interaction)
         mark_block!(ball_v[j], ball_p[j])    # ball pos → ball acc
         mark_block!(ball_v[j], ball_v[j])    # ball vel → ball acc (damping)
         mark_block!(ball_v[j], ir_p)         # IR pos → ball acc
@@ -80,40 +72,31 @@ function build_jacobian_sparsity(Z::Int)
         mark_block!(ball_v[j], cage_p)       # cage pos → ball acc (pocket)
         mark_block!(ball_v[j], cage_v)       # cage vel → ball acc (pocket)
 
-        # IR acceleration depends on ball j (Newton's 3rd law):
-        mark_block!(ir_v, ball_p[j])         # ball pos → IR acc
-        mark_block!(ir_v, ball_v[j])         # ball vel → IR acc
-
-        # Cage acceleration depends on ball j (pocket force):
-        mark_block!(cage_v, ball_p[j])       # ball pos → cage acc
-        mark_block!(cage_v, ball_v[j])       # ball vel → cage acc
+        # Newton's 3rd law
+        mark_block!(ir_v, ball_p[j])
+        mark_block!(ir_v, ball_v[j])
+        mark_block!(cage_v, ball_p[j])
+        mark_block!(cage_v, ball_v[j])
     end
 
-    # IR acceleration depends on own state (damping)
+    # Self-coupling
     mark_block!(ir_v, ir_p)
     mark_block!(ir_v, ir_v)
-
-    # Cage acceleration depends on own state (pilot, damping)
     mark_block!(cage_v, cage_p)
     mark_block!(cage_v, cage_v)
 
-    # ── 3. Thermal Coupling ──
-    th = thermal_offset(Z):thermal_offset(Z)+N_THERMAL-1
-    # Temperatures depend on all mechanical states (heat generation) and temperatures (conduction)
-    mark_block!(th, 1:N)
+    # ── 3. Thermal coupling ──
+    mark_block!(th, th)
+    mark_block!(ha, ha)
 
-    # Heat accumulators depend on all mechanical states (heat source terms)
-    ha = heat_accum_offset(Z):heat_accum_offset(Z)+N_HEAT_ACCUM-1
-    mark_block!(ha, 1:N)
-
-    # Velocity derivatives depend on temperatures (temperature-dependent viscosity)
+    # Temperature → friction → velocity
     mark_block!(ir_v, th)
     mark_block!(cage_v, th)
     for j in 1:Z
         mark_block!(ball_v[j], th)
     end
 
-    # Cage pilot coupling with Inner Race
+    # Cage pilot ↔ IR
     mark_block!(ir_v, cage_p)
     mark_block!(ir_v, cage_v)
     mark_block!(cage_v, ir_p)

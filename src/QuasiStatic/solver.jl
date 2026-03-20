@@ -222,15 +222,19 @@ function quasi_static_residual!(F::AbstractVector, val_vec::AbstractVector,
     F_b_rad = (Qo_15 .* X_2 .+ λo .* M_g .* X_1 ./ D) ./ L_o .-
               (Qi_15 .* (A_2 .- X_2) .+ λi .* M_g ./ D .* (A_1 .- X_1)) ./ L_i .- F_c
 
-    # ── Global residuals ──
+    # ── Global residuals (scaled to O(1) for LM residual balancing) ──
     Q_i_ax = (Qi_15 .* (A_1 .- X_1) .- λi .* M_g ./ D .* (A_2 .- X_2)) ./ L_i
     Q_i_rad = (Qi_15 .* (A_2 .- X_2) .+ λi .* M_g ./ D .* (A_1 .- X_1)) ./ L_i
 
-    F_ax_err = p.F_a - sum(Q_i_ax)
-    F_rz_err = p.F_rz - sum(Q_i_rad .* cos_psi)
-    F_ry_err = p.F_ry + sum(Q_i_rad .* sin_psi)
-    M_by_err = M_y - sum((Q_i_ax .* R_i .+ λi .* f_i .* M_g) .* cos_psi)
-    M_bz_err = M_z - sum((Q_i_ax .* R_i .+ λi .* f_i .* M_g) .* sin_psi)
+    # Reference force scale: aligns force residuals ~O(1) with geometric residuals ~O(1)
+    Q_ref = max(abs(p.F_a), maximum(abs, Qi_15), 1.0)
+    M_ref = Q_ref * p.d_m  # moment reference scale
+
+    F_ax_err = (p.F_a - sum(Q_i_ax)) / Q_ref
+    F_rz_err = (p.F_rz - sum(Q_i_rad .* cos_psi)) / Q_ref
+    F_ry_err = (p.F_ry + sum(Q_i_rad .* sin_psi)) / Q_ref
+    M_by_err = (M_y - sum((Q_i_ax .* R_i .+ λi .* f_i .* M_g) .* cos_psi)) / M_ref
+    M_bz_err = (M_z - sum((Q_i_ax .* R_i .+ λi .* f_i .* M_g) .* sin_psi)) / M_ref
 
     # ── Assemble (matching MATLAB ordering) ──
     F[1] = F_ax_err
@@ -240,8 +244,8 @@ function quasi_static_residual!(F::AbstractVector, val_vec::AbstractVector,
     F[5] = M_bz_err
     F[6:5+Z] .= Geo_i_err
     F[5+Z+1:5+2Z] .= Geo_o_err
-    F[5+2Z+1:5+3Z] .= F_b_ax
-    F[5+3Z+1:5+4Z] .= F_b_rad
+    F[5+2Z+1:5+3Z] .= F_b_ax ./ Q_ref
+    F[5+3Z+1:5+4Z] .= F_b_rad ./ Q_ref
 
     return nothing
 end

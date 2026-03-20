@@ -179,75 +179,7 @@ end
 
 # ── Standard catalog ─────────────────────────────────────────────────
 
-"7210B angular contact ball bearing (standard catalog)"
-function bearing_7210B()
-    geom = BearingGeometry(
-        d=12.7e-3,
-        n_balls=16,
-        f_i=0.52,
-        f_o=0.52,
-        d_m=70.0e-3,
-        alpha_0=deg2rad(40.0),
-        P_d=0.0,
-        rho_ball=7800.0,
-    )
-    mat = MaterialParams(E=2.08e11, nu=0.3)
-    return geom, mat
-end
 
-"7008C angular contact ball bearing (40mm bore, 15° contact angle)"
-function bearing_7008C()
-    # ISO 7008C: d_bore=40mm, d_outer=68mm, width=15mm
-    # Ball d=7.938mm, Z=16, α₀=15°, f_i=0.52, f_o=0.53
-    geom = BearingGeometry(
-        d=7.938e-3,
-        n_balls=16,
-        f_i=0.52,
-        f_o=0.53,
-        d_m=54.0e-3,   # (40+68)/2
-        alpha_0=deg2rad(15.0),
-        P_d=0.0,
-        rho_ball=7800.0,
-    )
-    mat = MaterialParams(E=2.08e11, nu=0.3)
-    return geom, mat
-end
-
-"7010C angular contact ball bearing (50mm bore, 15° contact angle)"
-function bearing_7010C()
-    # ISO 7010C: d_bore=50mm, d_outer=80mm, width=16mm
-    # Ball d=9.525mm, Z=16, α₀=15°, f_i=0.52, f_o=0.53
-    geom = BearingGeometry(
-        d=9.525e-3,
-        n_balls=16,
-        f_i=0.52,
-        f_o=0.53,
-        d_m=65.0e-3,   # (50+80)/2
-        alpha_0=deg2rad(15.0),
-        P_d=0.0,
-        rho_ball=7800.0,
-    )
-    mat = MaterialParams(E=2.08e11, nu=0.3)
-    return geom, mat
-end
-
-"7014C angular contact ball bearing (70mm bore, 15° contact angle)"
-function bearing_7014C()
-    # ISO 7014C: d_bore=70mm, d_outer=110mm, width=20mm
-    # Ball d=12.7mm, Z=18, α₀=15°, f_i=0.52, f_o=0.53
-    geom = BearingGeometry(
-        d=12.7e-3,
-        n_balls=18,
-        f_i=0.52,
-        f_o=0.53,
-        d_m=90.0e-3,   # (70+110)/2
-        alpha_0=deg2rad(15.0),
-        P_d=0.0,
-        rho_ball=7800.0,
-    )
-    mat = MaterialParams(E=2.08e11, nu=0.3)
-    return geom, mat
-end
 
 """
     bearing_custom(; bore, outer, d_ball, n_balls, alpha_deg, f_i=0.52, f_o=0.53)
@@ -483,6 +415,7 @@ Base.@kwdef struct IntegratorConfig
     atol::Float64 = 1e-9
     h_max::Float64 = 1e-3
     max_steps::Int = 100_000
+    eps_contact::Float64 = 1e-6   # smooth_hertz_delta ε (nondim contact regularization width)
 end
 
 # ── Thermal Parameters ────────────────────────────────────────────────
@@ -510,6 +443,7 @@ Base.@kwdef struct ThermalParams
     c_steel::Float64 = 460.0        # [J/(kg·K)]
     oil_flow_rate::Float64 = 0.0    # [cm³/min] oil flow rate (0 = no circulation)
     T_oil_inlet::Float64 = NaN      # [K] oil inlet temperature (NaN → use T_init)
+    th_accel::Float64 = 10000.0     # thermal capacity acceleration factor (1.0 = real physics)
 end
 
 "Mutable LPTN 4-node temperature state"
@@ -547,21 +481,23 @@ Base.@kwdef struct SimulationConfig
     mu_spin::Float64 = 0.06             # spin friction coefficient
     c_structural::Float64 = 10.0        # structural damping [N·s/m]
     zeta::Float64 = 0.03                # damping ratio
+    alpha2_relax_time::Float64 = 2e-4   # minimum α₂ first-order relaxation time [s]
     delta_r_thermal::Float64 = 0.0      # thermal radial expansion [m]
     integrator::IntegratorConfig = IntegratorConfig()
     churning::ChurningParams = ChurningParams()
     thermal::ThermalParams = ThermalParams()
 
     function SimulationConfig(t_end, dt_output, inner_race_speed, outer_race_speed, F_axial, F_radial,
-        t_ramp_end, mu_spin, c_structural, zeta,
+        t_ramp_end, mu_spin, c_structural, zeta, alpha2_relax_time,
         delta_r_thermal, integrator, churning, thermal)
         check_positive("t_end", t_end, "SimulationConfig")
         dt_output >= t_end && throw(ArgumentError(
             "dt_output ($dt_output) must be < t_end ($t_end)"))
         check_non_negative("inner_race_speed", inner_race_speed, "SimulationConfig")
         check_range("zeta", zeta, 0.0, 1.0, "SimulationConfig")
+        check_positive("alpha2_relax_time", alpha2_relax_time, "SimulationConfig")
         new(t_end, dt_output, inner_race_speed, outer_race_speed, F_axial, F_radial,
-            t_ramp_end, mu_spin, c_structural, zeta, delta_r_thermal,
+            t_ramp_end, mu_spin, c_structural, zeta, alpha2_relax_time, delta_r_thermal,
             integrator, churning, thermal)
     end
 end

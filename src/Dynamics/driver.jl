@@ -7,9 +7,9 @@
 # =====================================================================
 
 using OrdinaryDiffEq: ODEProblem, ODEFunction, solve, Tsit5, FBDF
-using ADTypes: AutoFiniteDiff  # ForwardDiff blocked by SciMLBase.UJacobianWrapper AbstractFloat assertion; kernel is AD-ready
+using ADTypes: AutoForwardDiff  # 极致性能：全部奇异点被消灭，重新启用精确解析 Jacobian !
 using DiffEqCallbacks
-using Statistics: mean
+using Statistics: mean, std
 using Printf
 
 """
@@ -17,9 +17,10 @@ using Printf
 """
 struct SimResult
     t::Vector{Float64}          # time samples [s] (dimensional)
-    u::Matrix{Float64}          # state matrix (n_state × n_samples)
+    u::Matrix{Float64}          # state matrix (n_samples × n_state)
     scales::Scales
-    params::Vector{Float64}
+    params::ODEParams
+    ca_axes::Any                # ComponentArray axes for state vector reconstruction
     retcode::Any
 end
 
@@ -32,17 +33,17 @@ function quaternion_renormalize_callback(Z::Int)
     function affect!(integrator)
         u = integrator.u
         @inbounds for j in 1:Z
-            off = ball_pos_offset(j) + 3
-            s = u[off]
-            v1 = u[off+1]
-            v2 = u[off+2]
-            v3 = u[off+3]
+            bp = u.ball[j].pos
+            s = bp.q0
+            v1 = bp.q1
+            v2 = bp.q2
+            v3 = bp.q3
             n = sqrt(s^2 + v1^2 + v2^2 + v3^2)
             if n > 1e-15
-                u[off] = s / n
-                u[off+1] = v1 / n
-                u[off+2] = v2 / n
-                u[off+3] = v3 / n
+                bp.q0 = s / n
+                bp.q1 = v1 / n
+                bp.q2 = v2 / n
+                bp.q3 = v3 / n
             end
         end
     end
@@ -103,7 +104,7 @@ function run_simulation(geom::BearingGeometry, mat::MaterialParams,
     dt_star = nondim_time(scales, config.dt_output)
     saveat = dt_star
 
-    params_tuple = (params,)  # wrap for kernel
+    params_tuple = (params,)  # wrap ODEParams for kernel
 
     # Build sparse Jacobian prototype for efficient finite differences
     # jac_prototype goes on ODEFunction, not the algorithm constructor
@@ -135,7 +136,7 @@ function run_simulation(geom::BearingGeometry, mat::MaterialParams,
     ic = config.integrator
     verbose && println("Integrating ($(config.t_end*1e3) ms)...")
 
-    sol = solve(prob, FBDF(; autodiff=AutoFiniteDiff());
+    sol = solve(prob, FBDF(; autodiff=AutoForwardDiff());
         reltol=ic.rtol, abstol=ic.atol,
         dtmax=nondim_time(scales, ic.h_max),
         maxiters=ic.max_steps,
@@ -150,5 +151,119 @@ function run_simulation(geom::BearingGeometry, mat::MaterialParams,
     t_dim = dim_time.(Ref(scales), sol.t)
     u_mat = hcat(sol.u...)'  # (n_time × n_state)
 
-    return SimResult(t_dim, u_mat, scales, params, sol.retcode)
+    return SimResult(t_dim, u_mat, scales, params, getaxes(u0_star), sol.retcode)
+end
+
+"""
+    run_convergence_scan(geom, mat, lub, trac, cage, config;
+        h_max_values=[2e-6, 1e-6, 5e-7, 2e-7, 1e-7],
+        symmetry_threshold=1e-3) → DataFrame-like output
+
+Run the same simulation with different `h_max` values and report symmetry metrics.
+Returns a vector of NamedTuples with convergence diagnostics.
+
+Used for TC-PHY-006 numerical robustness validation.
+"""
+function run_convergence_scan(geom::BearingGeometry, mat::MaterialParams,
+    lub::LubricantParams, trac::TractionParams,
+    cage::CageGeometry, config::SimulationConfig;
+    h_max_values::Vector{Float64}=[2e-6, 1e-6, 5e-7, 2e-7, 1e-7],
+    symmetry_threshold::Float64=1e-3)
+
+    Z = geom.n_balls
+    results = []
+
+    for hm in h_max_values
+        ic_mod = IntegratorConfig(
+            rtol=config.integrator.rtol,
+            atol=config.integrator.atol,
+            h_max=hm,
+            max_steps=config.integrator.max_steps,
+            eps_contact=config.integrator.eps_contact
+        )
+        config_mod = SimulationConfig(
+            t_end=config.t_end,
+            dt_output=config.dt_output,
+            inner_race_speed=config.inner_race_speed,
+            outer_race_speed=config.outer_race_speed,
+            F_axial=config.F_axial,
+            F_radial=config.F_radial,
+            t_ramp_end=config.t_ramp_end,
+            mu_spin=config.mu_spin,
+            c_structural=config.c_structural,
+            zeta=config.zeta,
+            alpha2_relax_time=config.alpha2_relax_time,
+            delta_r_thermal=config.delta_r_thermal,
+            integrator=ic_mod,
+            churning=config.churning,
+            thermal=config.thermal
+        )
+
+        @printf("  h_max = %.1e ... ", hm)
+        flush(stdout)
+
+        sim = run_simulation(geom, mat, lub, trac, cage, config_mod)
+
+        # Compute per-ball Q_i symmetry at each saved time
+        n_t = length(sim.t)
+        first_qi_gt = NaN
+        first_qo_gt = NaN
+        peak_qi_std = 0.0
+        peak_qo_std = 0.0
+        peak_qi_time = 0.0
+        peak_qo_time = 0.0
+
+        for k in 1:n_t
+            u_k = sim.u[k, :]
+            fo = compute_field_outputs(u_k, sim.params, Z)
+            qi_vals = [fo[j].Q_i_dim for j in 1:Z]
+            qo_vals = [fo[j].Q_o_dim for j in 1:Z]
+            qi_std = std(qi_vals)
+            qo_std = std(qo_vals)
+
+            if qi_std > symmetry_threshold && isnan(first_qi_gt)
+                first_qi_gt = sim.t[k]
+            end
+            if qo_std > symmetry_threshold && isnan(first_qo_gt)
+                first_qo_gt = sim.t[k]
+            end
+            if qi_std > peak_qi_std
+                peak_qi_std = qi_std
+                peak_qi_time = sim.t[k]
+            end
+            if qo_std > peak_qo_std
+                peak_qo_std = qo_std
+                peak_qo_time = sim.t[k]
+            end
+        end
+
+        @printf("PEAK_QI_STD=%.4e  FIRST_GT=%.4e s\n", peak_qi_std,
+            isnan(first_qi_gt) ? NaN : first_qi_gt)
+
+        push!(results, (
+            h_max=hm,
+            retcode=sim.retcode,
+            n_steps=n_t,
+            first_qi_gt=first_qi_gt,
+            first_qo_gt=first_qo_gt,
+            peak_qi_std=peak_qi_std,
+            peak_qo_std=peak_qo_std,
+            peak_qi_time=peak_qi_time,
+            peak_qo_time=peak_qo_time,
+        ))
+    end
+
+    # Print summary table
+    println("\n  ── Convergence Scan Summary ──")
+    @printf("  %-10s  %-14s  %-14s  %-12s  %-12s\n",
+        "h_max", "FIRST_QI_GT", "FIRST_QO_GT", "PEAK_QI_STD", "PEAK_QO_STD")
+    for r in results
+        @printf("  %-10.1e  %-14s  %-14s  %-12.4e  %-12.4e\n",
+            r.h_max,
+            isnan(r.first_qi_gt) ? "NaN" : @sprintf("%.4e s", r.first_qi_gt),
+            isnan(r.first_qo_gt) ? "NaN" : @sprintf("%.4e s", r.first_qo_gt),
+            r.peak_qi_std, r.peak_qo_std)
+    end
+
+    return results
 end
